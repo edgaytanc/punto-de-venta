@@ -1,0 +1,10 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: build # <-- Usa la etapa 'build' del Dockerfile (que tiene el SDK)
+    volumes:
+      - ./backend:/src # <-- Mapea el código a /src
+    command: dotnet watch run --urls "http://+:80"

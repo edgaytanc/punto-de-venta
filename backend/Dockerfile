@@ -7,7 +7,7 @@ WORKDIR /src
 COPY ["MiApi.csproj", "./"]
 RUN dotnet restore "./MiApi.csproj"
 COPY . .
-WORKDIR "/src/."
+WORKDIR "/src"
 RUN dotnet publish "MiApi.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
