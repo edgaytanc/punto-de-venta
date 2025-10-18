@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Users\\David\\Desktop\\workspace\\POS\\backend\\MiApi.csproj": {}
+    "/src/MiApi.csproj": {}
   },
   "projects": {
-    "D:\\Users\\David\\Desktop\\workspace\\POS\\backend\\MiApi.csproj": {
+    "/src/MiApi.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Users\\David\\Desktop\\workspace\\POS\\backend\\MiApi.csproj",
+        "projectUniqueName": "/src/MiApi.csproj",
         "projectName": "MiApi",
-        "projectPath": "D:\\Users\\David\\Desktop\\workspace\\POS\\backend\\MiApi.csproj",
-        "packagesPath": "C:\\Users\\David\\.nuget\\packages\\",
-        "outputPath": "D:\\Users\\David\\Desktop\\workspace\\POS\\backend\\obj\\",
+        "projectPath": "/src/MiApi.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/src/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\David\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -81,7 +81,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.414/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/8.0.415/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

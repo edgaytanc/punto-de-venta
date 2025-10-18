@@ -1,0 +1,21 @@
+/* Estilos para el layout principal */
+.app-container {
+  width: 100%;
+  height: 100%;
+}
+
+.app-sidenav {
+  width: 250px;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.main-content {
+  flex: 1 1 auto;
+  padding: 20px;
+  overflow-y: auto; /* Permite scroll en el contenido */
+}

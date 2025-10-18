@@ -1,10 +1,18 @@
-version: '3.8'
-
 services:
-  backend:
+  frontend:
+    # --- INICIO DE CAMBIOS ---
     build:
-      context: ./backend
-      target: build # <-- Usa la etapa 'build' del Dockerfile (que tiene el SDK)
+      context: ./frontend
+      target: build # Le dice a Docker que use la etapa "build" del Dockerfile
+    
+    ports:
+      - "4200:4200" # Mapea al puerto de ng serve
+    # --- FIN DE CAMBIOS ---
+      
+    # ---- LÍNEA MODIFICADA ----
+    command: npm run start -- --host 0.0.0.0 --poll 1000
+    # --------------------------
+    
     volumes:
-      - ./backend:/src # <-- Mapea el código a /src
-    command: dotnet watch run --urls "http://+:80"
+      - ./frontend:/app
+      - /app/node_modules
