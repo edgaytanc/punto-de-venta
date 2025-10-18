@@ -1,29 +1,27 @@
 import { Routes } from '@angular/router';
 import ProductoListComponent from './pages/producto-list/producto-list.component';
+import CategoriaListComponent from './pages/categoria-list/categoria-list.component';
+// 1. Importamos el nuevo componente de lista
+import ProveedorListComponent from './pages/proveedor-list/proveedor-list.component';
 
 export const ADMIN_ROUTES: Routes = [
-  // Cuando alguien entre a /admin, redirigir a /admin/productos
   {
     path: '',
     pathMatch: 'full',
     redirectTo: 'productos',
   },
-
-  // Ruta /admin/productos
   {
     path: 'productos',
     component: ProductoListComponent,
   },
-
-  // Rutas para categorías y proveedores (las definiremos más tarde)
   {
     path: 'categorias',
-    // component: CategoriaListComponent
-    redirectTo: 'productos', // Temporal
+    component: CategoriaListComponent,
   },
+
+  // 2. Actualizamos la ruta de proveedores
   {
     path: 'proveedores',
-    // component: ProveedorListComponent
-    redirectTo: 'productos', // Temporal
+    component: ProveedorListComponent, // Ya no es un redirect
   },
 ];

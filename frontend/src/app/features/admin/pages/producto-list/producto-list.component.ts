@@ -9,11 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-// 1. Importaciones necesarias para Diálogos y Notificaciones
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ProductoDialogComponent } from '../../components/producto-dialog/producto-dialog.component';
+
+// 1. Importamos el nuevo diálogo de confirmación
+import { ConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-producto-list',
@@ -28,8 +29,9 @@ import { ProductoDialogComponent } from '../../components/producto-dialog/produc
     MatButtonModule,
     MatToolbarModule,
     MatTooltipModule,
-    MatDialogModule,    // 2. Añadido
-    MatSnackBarModule,  // 2. Añadido
+    MatDialogModule,
+    MatSnackBarModule,
+    // (No es necesario importar ConfirmDialogComponent aquí porque se carga dinámicamente)
   ],
   templateUrl: './producto-list.component.html',
   styleUrl: './producto-list.component.scss',
@@ -51,7 +53,6 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  // 3. Inyectamos MatDialog y MatSnackBar
   constructor(
     private productoService: ProductoService,
     private dialog: MatDialog,
@@ -82,23 +83,20 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // 4. Lógica para ABRIR DIÁLOGO (Crear)
   abrirDialogoProducto(): void {
     const dialogRef = this.dialog.open(ProductoDialogComponent, {
       width: '600px',
-      data: { producto: null } // No enviamos producto (modo Crear)
+      data: { producto: null }
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      // 'result' contiene el valor del formulario si se guardó
       if (result) {
-        // Omitimos el ID para la creación
         const { id, ...nuevoProducto } = result;
 
         this.productoService.createProducto(nuevoProducto).subscribe({
           next: () => {
             this.mostrarNotificacion('Producto Creado');
-            this.cargarProductos(); // Recargamos la tabla
+            this.cargarProductos();
           },
           error: (err) => {
             this.mostrarNotificacion('Error al crear producto');
@@ -109,20 +107,18 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // 5. Lógica para ABRIR DIÁLOGO (Editar)
   editarProducto(producto: Producto): void {
     const dialogRef = this.dialog.open(ProductoDialogComponent, {
       width: '600px',
-      data: { producto: producto } // Enviamos el producto a editar
+      data: { producto: producto }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        // 'result' es el producto actualizado del formulario
         this.productoService.updateProducto(result.id, result).subscribe({
           next: () => {
             this.mostrarNotificacion('Producto Actualizado');
-            this.cargarProductos(); // Recargamos la tabla
+            this.cargarProductos();
           },
           error: (err) => {
             this.mostrarNotificacion('Error al actualizar producto');
@@ -133,15 +129,37 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
     });
   }
 
+  // 2. LÓGICA DE ELIMINACIÓN ACTUALIZADA
   eliminarProducto(id: number): void {
-    // Lógica para el botón "Eliminar" (próxima tarea)
-    console.log('Abrir diálogo para confirmar eliminación de ID:', id);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirmar Eliminación',
+        message: '¿Estás seguro de que deseas eliminar este producto?'
+      }
+    });
+
+    // 3. Escuchamos el resultado del diálogo
+    dialogRef.afterClosed().subscribe(result => {
+      // Si el usuario confirmó (result === true)
+      if (result) {
+        this.productoService.deleteProducto(id).subscribe({
+          next: () => {
+            this.mostrarNotificacion('Producto Eliminado');
+            this.cargarProductos(); // Recargamos la tabla
+          },
+          error: (err) => {
+            this.mostrarNotificacion('Error al eliminar producto');
+            console.error(err);
+          }
+        });
+      }
+    });
   }
 
-  // 6. Helper para mostrar notificaciones
   mostrarNotificacion(mensaje: string): void {
     this.snackBar.open(mensaje, 'Cerrar', {
-      duration: 3000, // 3 segundos
+      duration: 3000,
     });
   }
 }

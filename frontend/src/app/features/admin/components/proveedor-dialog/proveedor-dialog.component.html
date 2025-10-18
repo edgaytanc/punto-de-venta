@@ -1,0 +1,40 @@
+<h1 mat-dialog-title>{{ tituloDialogo }}</h1>
+
+<div mat-dialog-content [formGroup]="proveedorForm">
+
+  <mat-form-field appearance="outline" class="form-field">
+    <mat-label>Nombre del Proveedor</mat-label>
+    <input matInput formControlName="nombre" placeholder="Nombre S.A.">
+    <mat-error *ngIf="proveedorForm.get('nombre')?.hasError('required')">
+      El nombre es requerido.
+    </mat-error>
+  </mat-form-field>
+
+  <div class="form-row">
+    <mat-form-field appearance="outline" class="form-field-half">
+      <mat-label>Nombre de Contacto</mat-label>
+      <input matInput formControlName="contacto" placeholder="Juan Pérez">
+      <mat-error *ngIf="proveedorForm.get('contacto')?.hasError('required')">
+        Requerido.
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field-half">
+      <mat-label>Teléfono (Opcional)</mat-label>
+      <input matInput formControlName="telefono" placeholder="5555-5555">
+    </mat-form-field>
+  </div>
+
+  <mat-form-field appearance="outline" class="form-field">
+    <mat-label>Dirección (Opcional)</mat-label>
+    <textarea matInput formControlName="direccion" placeholder="Ciudad, País..."></textarea>
+  </mat-form-field>
+
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancelar()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onGuardar()" [disabled]="proveedorForm.invalid">
+    {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+  </button>
+</div>

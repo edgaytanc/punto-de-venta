@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+// 1. Importa RouterLink y RouterLinkActive
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 // Importaciones de Angular Material
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -11,9 +12,11 @@ import { MatButtonModule } from '@angular/material/button';
 @Component({
   selector: 'app-root',
   standalone: true,
-  // Añadimos los módulos de Material al array de imports
+  // 2. Añade RouterLink y RouterLinkActive aquí
   imports: [
     RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
     MatToolbarModule,
     MatSidenavModule,
     MatListModule,
@@ -21,7 +24,7 @@ import { MatButtonModule } from '@angular/material/button';
     MatButtonModule,
   ],
   templateUrl: './app.html',
-  styleUrl: './app.scss', // Añadimos la hoja de estilos
+  styleUrl: './app.scss',
 })
 export class AppComponent {
   title = 'Punto de Venta';

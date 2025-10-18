@@ -1,0 +1,9 @@
+.form-field {
+  width: 100%;
+}
+
+:host {
+  ::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
+    width: 450px; /* Un diálogo más pequeño */
+  }
+}

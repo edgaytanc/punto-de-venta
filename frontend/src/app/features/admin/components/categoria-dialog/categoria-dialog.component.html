@@ -1,0 +1,18 @@
+<h1 mat-dialog-title>{{ tituloDialogo }}</h1>
+
+<div mat-dialog-content [formGroup]="categoriaForm">
+  <mat-form-field appearance="outline" class="form-field">
+    <mat-label>Nombre</mat-label>
+    <input matInput formControlName="nombre" placeholder="Nombre de la categoría">
+    <mat-error *ngIf="categoriaForm.get('nombre')?.hasError('required')">
+      El nombre es requerido.
+    </mat-error>
+  </mat-form-field>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancelar()">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onGuardar()" [disabled]="categoriaForm.invalid">
+    {{ isEditMode ? 'Actualizar' : 'Guardar' }}
+  </button>
+</div>

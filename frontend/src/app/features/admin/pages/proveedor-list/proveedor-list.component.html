@@ -1,0 +1,50 @@
+<mat-toolbar class="table-toolbar">
+  <span>Gestión de Proveedores</span>
+  <span class="toolbar-spacer"></span>
+  <button mat-flat-button color="primary" (click)="abrirDialogoProveedor()">
+    <mat-icon>add</mat-icon>
+    Nuevo Proveedor
+  </button>
+</mat-toolbar>
+
+<div class="table-container mat-elevation-z8">
+  <table mat-table [dataSource]="dataSource" matSort>
+
+    <ng-container matColumnDef="id">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
+      <td mat-cell *matCellDef="let row"> {{row.id}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="nombre">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
+      <td mat-cell *matCellDef="let row"> {{row.nombre}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="contacto">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Contacto </th>
+      <td mat-cell *matCellDef="let row"> {{row.contacto}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="telefono">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Teléfono </th>
+      <td mat-cell *matCellDef="let row"> {{row.telefono || 'N/A'}} </td>
+    </ng-container>
+
+    <ng-container matColumnDef="acciones">
+      <th mat-header-cell *matHeaderCellDef> Acciones </th>
+      <td mat-cell *matCellDef="let row">
+        <button mat-icon-button color="primary" matTooltip="Editar" (click)="editarProveedor(row)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="eliminarProveedor(row.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+
+  <mat-paginator [pageSizeOptions]="[5, 10, 25]" aria-label="Seleccionar página de proveedores"></mat-paginator>
+</div>
