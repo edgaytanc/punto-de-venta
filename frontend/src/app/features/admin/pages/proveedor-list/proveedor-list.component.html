@@ -15,10 +15,8 @@
       <td mat-cell *matCellDef="let row"> {{row.id}} </td>
     </ng-container>
 
-    <ng-container matColumnDef="nombre">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
-      <td mat-cell *matCellDef="let row"> {{row.nombre}} </td>
-    </ng-container>
+    <ng-container matColumnDef="nombreProveedor"> <th mat-header-cell *matHeaderCellDef mat-sort-header> Nombre </th>
+      <td mat-cell *matCellDef="let row"> {{row.nombreProveedor}} </td> </ng-container>
 
     <ng-container matColumnDef="contacto">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Contacto </th>
@@ -30,17 +28,13 @@
       <td mat-cell *matCellDef="let row"> {{row.telefono || 'N/A'}} </td>
     </ng-container>
 
-    <ng-container matColumnDef="acciones">
-      <th mat-header-cell *matHeaderCellDef> Acciones </th>
-      <td mat-cell *matCellDef="let row">
-        <button mat-icon-button color="primary" matTooltip="Editar" (click)="editarProveedor(row)">
-          <mat-icon>edit</mat-icon>
-        </button>
-        <button mat-icon-button color="warn" matTooltip="Eliminar" (click)="eliminarProveedor(row.id)">
-          <mat-icon>delete</mat-icon>
-        </button>
-      </td>
+    <ng-container matColumnDef="correo">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header> Correo </th>
+      <td mat-cell *matCellDef="let row"> {{row.correo || 'N/A'}} </td>
     </ng-container>
+
+    <ng-container matColumnDef="acciones">
+      </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>

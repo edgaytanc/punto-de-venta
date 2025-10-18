@@ -34,15 +34,17 @@ import { ProveedorDialogComponent } from '../../components/proveedor-dialog/prov
 })
 export default class ProveedorListComponent implements OnInit, AfterViewInit {
 
-  displayedColumns: string[] = ['id', 'nombre', 'contacto', 'telefono', 'acciones'];
+  // CAMBIOS EN LAS COLUMNAS
+  displayedColumns: string[] = ['id', 'nombreProveedor', 'contacto', 'telefono', 'correo', 'acciones'];
   dataSource: MatTableDataSource<Proveedor>;
   proveedores: Proveedor[] = [];
 
+  // ... (resto del TS sin cambios) ...
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
-    private proveedorService: ProveedorService, // Usamos ProveedorService
+    private proveedorService: ProveedorService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) {
@@ -59,7 +61,7 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
   }
 
   cargarProveedores(): void {
-    this.proveedorService.getProveedores().subscribe({ // Llamada a getProveedores
+    this.proveedorService.getProveedores().subscribe({
       next: (data) => {
         this.proveedores = data;
         this.dataSource.data = this.proveedores;
@@ -71,7 +73,7 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
   }
 
   abrirDialogoProveedor(): void {
-    const dialogRef = this.dialog.open(ProveedorDialogComponent, { // Abre ProveedorDialog
+    const dialogRef = this.dialog.open(ProveedorDialogComponent, {
       width: '600px',
       data: { proveedor: null }
     });
@@ -80,7 +82,7 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
       if (result) {
         const { id, ...nuevoProveedor } = result;
 
-        this.proveedorService.createProveedor(nuevoProveedor).subscribe({ // Llama a createProveedor
+        this.proveedorService.createProveedor(nuevoProveedor).subscribe({
           next: () => {
             this.mostrarNotificacion('Proveedor Creado');
             this.cargarProveedores();
@@ -92,14 +94,14 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
   }
 
   editarProveedor(proveedor: Proveedor): void {
-    const dialogRef = this.dialog.open(ProveedorDialogComponent, { // Abre ProveedorDialog
+    const dialogRef = this.dialog.open(ProveedorDialogComponent, {
       width: '600px',
       data: { proveedor: proveedor }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.proveedorService.updateProveedor(result.id, result).subscribe({ // Llama a updateProveedor
+        this.proveedorService.updateProveedor(result.id, result).subscribe({
           next: () => {
             this.mostrarNotificacion('Proveedor Actualizado');
             this.cargarProveedores();
@@ -111,7 +113,7 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
   }
 
   eliminarProveedor(id: number): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, { // Reutilizamos ConfirmDialog
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
         title: 'Confirmar Eliminación',
@@ -121,7 +123,7 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.proveedorService.deleteProveedor(id).subscribe({ // Llama a deleteProveedor
+        this.proveedorService.deleteProveedor(id).subscribe({
           next: () => {
             this.mostrarNotificacion('Proveedor Eliminado');
             this.cargarProveedores();

@@ -1,7 +1,8 @@
 export interface Proveedor {
   id: number;
-  nombre: string;
+  nombreProveedor: string; // <-- CAMBIO
   contacto: string;
-  telefono?: string; // Opcional, basado en el modelo de C#
-  direccion?: string; // Opcional
+  telefono: string;        // <-- CAMBIO (ahora requerido)
+  direccion: string;       // <-- CAMBIO (ahora requerido)
+  correo: string;          // <-- AÑADIDO
 }

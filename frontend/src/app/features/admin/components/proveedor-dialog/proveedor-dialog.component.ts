@@ -42,10 +42,11 @@ export class ProveedorDialogComponent implements OnInit {
   ) {
     this.proveedorForm = this.fb.group({
       id: [0],
-      nombre: ['', Validators.required],
+      nombreProveedor: ['', Validators.required], // <-- CAMBIO
       contacto: ['', Validators.required],
-      telefono: [''], // Opcional
-      direccion: [''], // Opcional
+      telefono: ['', Validators.required],       // <-- CAMBIO (ahora requerido)
+      direccion: ['', Validators.required],      // <-- CAMBIO (ahora requerido)
+      correo: ['', [Validators.required, Validators.email]], // <-- AÑADIDO con validación de email
     });
 
     if (data && data.proveedor) {

@@ -42,7 +42,8 @@ export class CategoriaDialogComponent implements OnInit {
   ) {
     this.categoriaForm = this.fb.group({
       id: [0],
-      nombre: ['', Validators.required],
+      nombreCategoria: ['', Validators.required], // <-- CAMBIO AQUÍ
+      descripcion: [''],                         // <-- AÑADIDO (No requerido por ahora)
     });
 
     if (data && data.categoria) {

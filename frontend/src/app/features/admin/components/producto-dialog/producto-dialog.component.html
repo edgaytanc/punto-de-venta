@@ -56,7 +56,7 @@
       <mat-label>Categoría</mat-label>
       <mat-select formControlName="categoriaProductoId">
         <mat-option *ngFor="let cat of categorias" [value]="cat.id">
-          {{ cat.nombre }}
+          {{ cat.nombreCategoria }}
         </mat-option>
       </mat-select>
       <mat-error *ngIf="productoForm.get('categoriaProductoId')?.hasError('required')">
@@ -68,8 +68,8 @@
       <mat-label>Proveedor</mat-label>
       <mat-select formControlName="proveedorId">
         <mat-option *ngFor="let prov of proveedores" [value]="prov.id">
-          {{ prov.nombre }}
-        </mat-option>
+          {{ prov.nombreProveedor }}
+          </mat-option>
       </mat-select>
       <mat-error *ngIf="productoForm.get('proveedorId')?.hasError('required')">
         Requerido.

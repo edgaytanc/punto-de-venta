@@ -35,7 +35,7 @@ import { CategoriaDialogComponent } from '../../components/categoria-dialog/cate
 export default class CategoriaListComponent implements OnInit, AfterViewInit {
 
   // Columnas más simples
-  displayedColumns: string[] = ['id', 'nombre', 'acciones'];
+  displayedColumns: string[] = ['id', 'nombreCategoria', 'descripcion', 'acciones'];
   dataSource: MatTableDataSource<Categoria>;
   categorias: Categoria[] = [];
 
@@ -60,59 +60,67 @@ export default class CategoriaListComponent implements OnInit, AfterViewInit {
   }
 
   cargarCategorias(): void {
-    this.categoriaService.getCategorias().subscribe({ // Llamada a getCategorias
+    this.categoriaService.getCategorias().subscribe({
       next: (data) => {
         this.categorias = data;
         this.dataSource.data = this.categorias;
+        console.log('Categorías cargadas:', data); // Log para depurar
       },
       error: (err) => {
+        console.error('Error al cargar categorías:', err); // Log de error
         this.mostrarNotificacion('Error al cargar categorías');
       },
     });
   }
 
   abrirDialogoCategoria(): void {
-    const dialogRef = this.dialog.open(CategoriaDialogComponent, { // Abre CategoriaDialog
+    const dialogRef = this.dialog.open(CategoriaDialogComponent, {
       width: '450px',
       data: { categoria: null }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+        // Aseguramos que el objeto enviado no tenga ID si es nuevo
         const { id, ...nuevaCategoria } = result;
-
-        this.categoriaService.createCategoria(nuevaCategoria).subscribe({ // Llama a createCategoria
+        this.categoriaService.createCategoria(nuevaCategoria).subscribe({
           next: () => {
             this.mostrarNotificacion('Categoría Creada');
             this.cargarCategorias();
           },
-          error: (err) => this.mostrarNotificacion('Error al crear categoría')
+          error: (err) => {
+             console.error('Error al crear:', err);
+             this.mostrarNotificacion('Error al crear categoría');
+          }
         });
       }
     });
   }
 
   editarCategoria(categoria: Categoria): void {
-    const dialogRef = this.dialog.open(CategoriaDialogComponent, { // Abre CategoriaDialog
+    const dialogRef = this.dialog.open(CategoriaDialogComponent, {
       width: '450px',
       data: { categoria: categoria }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.categoriaService.updateCategoria(result.id, result).subscribe({ // Llama a updateCategoria
+        this.categoriaService.updateCategoria(result.id, result).subscribe({
           next: () => {
             this.mostrarNotificacion('Categoría Actualizada');
             this.cargarCategorias();
           },
-          error: (err) => this.mostrarNotificacion('Error al actualizar categoría')
+           error: (err) => {
+             console.error('Error al actualizar:', err);
+             this.mostrarNotificacion('Error al actualizar categoría');
+          }
         });
       }
     });
   }
 
   eliminarCategoria(id: number): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, { // Reutilizamos ConfirmDialog
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
         title: 'Confirmar Eliminación',
@@ -122,12 +130,15 @@ export default class CategoriaListComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.categoriaService.deleteCategoria(id).subscribe({ // Llama a deleteCategoria
+        this.categoriaService.deleteCategoria(id).subscribe({
           next: () => {
             this.mostrarNotificacion('Categoría Eliminada');
             this.cargarCategorias();
           },
-          error: (err) => this.mostrarNotificacion('Error al eliminar categoría')
+          error: (err) => {
+             console.error('Error al eliminar:', err);
+             this.mostrarNotificacion('Error al eliminar categoría');
+          }
         });
       }
     });
