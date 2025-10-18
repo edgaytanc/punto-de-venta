@@ -1,0 +1,25 @@
+/* Campo de ancho completo */
+.form-field {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Contenedor para filas de 2 campos */
+.form-row {
+  display: flex;
+  gap: 16px; /* Espacio entre campos */
+  width: 100%;
+}
+
+/* Campo de la mitad de ancho */
+.form-field-half {
+  width: 50%;
+  margin-bottom: 10px;
+}
+
+/* Ancho del diálogo */
+:host {
+  ::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
+    width: 600px; /* Ancho fijo para el diálogo */
+  }
+}
