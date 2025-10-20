@@ -3,16 +3,17 @@
 <div mat-dialog-content [formGroup]="productoForm">
 
   <mat-form-field appearance="outline" class="form-field">
-    <mat-label>Nombre</mat-label>
-    <input matInput formControlName="nombre" placeholder="Nombre del producto">
-    <mat-error *ngIf="productoForm.get('nombre')?.hasError('required')">
-      El nombre es requerido.
+    <mat-label>Nombre del Producto</mat-label>
+    <input matInput formControlName="nombreProducto" placeholder="Nombre del producto"> <mat-error *ngIf="productoForm.get('nombreProducto')?.hasError('required')"> El nombre es requerido.
     </mat-error>
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="form-field">
-    <mat-label>Descripción</mat-label>
-    <textarea matInput formControlName="descripcion" placeholder="Descripción (opcional)"></textarea>
+    <mat-label>URL de Imagen</mat-label>
+    <input matInput formControlName="imagenUrl" placeholder="http://...">
+    <mat-error *ngIf="productoForm.get('imagenUrl')?.hasError('required')">
+      La URL de la imagen es requerida.
+    </mat-error>
   </mat-form-field>
 
   <div class="form-row">
@@ -22,31 +23,16 @@
       <mat-error *ngIf="productoForm.get('precio')?.hasError('required')">
         Requerido.
       </mat-error>
-    </mat-form-field>
-
-    <mat-form-field appearance="outline" class="form-field-half">
-      <mat-label>Costo (Q)</mat-label>
-      <input matInput type="number" formControlName="costo" placeholder="0.00">
-      <mat-error *ngIf="productoForm.get('costo')?.hasError('required')">
-        Requerido.
-      </mat-error>
-    </mat-form-field>
-  </div>
-
-  <div class="form-row">
-    <mat-form-field appearance="outline" class="form-field-half">
-      <mat-label>Stock Actual</mat-label>
-      <input matInput type="number" formControlName="stockActual" placeholder="0">
-      <mat-error *ngIf="productoForm.get('stockActual')?.hasError('required')">
-        Requerido.
+       <mat-error *ngIf="productoForm.get('precio')?.hasError('min')">
+        Debe ser positivo.
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field-half">
-      <mat-label>Stock Mínimo</mat-label>
-      <input matInput type="number" formControlName="stockMinimo" placeholder="0">
-      <mat-error *ngIf="productoForm.get('stockMinimo')?.hasError('required')">
-        Requerido.
+      <mat-label>Stock</mat-label>
+      <input matInput type="number" formControlName="stock" placeholder="0"> <mat-error *ngIf="productoForm.get('stock')?.hasError('required')"> Requerido.
+      </mat-error>
+      <mat-error *ngIf="productoForm.get('stock')?.hasError('min')"> Debe ser positivo.
       </mat-error>
     </mat-form-field>
   </div>
@@ -54,25 +40,19 @@
   <div class="form-row">
     <mat-form-field appearance="outline" class="form-field-half">
       <mat-label>Categoría</mat-label>
-      <mat-select formControlName="categoriaProductoId">
-        <mat-option *ngFor="let cat of categorias" [value]="cat.id">
-          {{ cat.nombreCategoria }}
-        </mat-option>
+      <mat-select formControlName="idCategoria"> <mat-option *ngFor="let cat of categorias" [value]="cat.id">
+          {{ cat.nombreCategoria }} </mat-option>
       </mat-select>
-      <mat-error *ngIf="productoForm.get('categoriaProductoId')?.hasError('required')">
-        Requerido.
+      <mat-error *ngIf="productoForm.get('idCategoria')?.hasError('required')"> Requerido.
       </mat-error>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="form-field-half">
       <mat-label>Proveedor</mat-label>
-      <mat-select formControlName="proveedorId">
-        <mat-option *ngFor="let prov of proveedores" [value]="prov.id">
-          {{ prov.nombreProveedor }}
-          </mat-option>
+      <mat-select formControlName="idProveedor"> <mat-option *ngFor="let prov of proveedores" [value]="prov.id">
+          {{ prov.nombreProveedor }} </mat-option>
       </mat-select>
-      <mat-error *ngIf="productoForm.get('proveedorId')?.hasError('required')">
-        Requerido.
+      <mat-error *ngIf="productoForm.get('idProveedor')?.hasError('required')"> Requerido.
       </mat-error>
     </mat-form-field>
   </div>

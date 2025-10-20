@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MiApi.Models;
+// Añade estos using para SaveChangesAsync
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MiApi.Data
 {
@@ -9,6 +12,7 @@ namespace MiApi.Data
         {
         }
 
+        // --- Tus DbSets (sin cambios) ---
         public DbSet<Producto> Productos { get; set; }
         public DbSet<CategoriaProducto> CategoriasProductos { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
@@ -19,13 +23,12 @@ namespace MiApi.Data
         public DbSet<Rol> Roles { get; set; }
         public DbSet<DetalleInventario> DetallesInventario { get; set; }
         public DbSet<HistorialPrecio> HistorialPrecios { get; set; }
+        // ---------------------------------
 
-        // 👇 MÉTODO AÑADIDO PARA CONFIGURAR LA PRECISIÓN DE LOS DECIMALES
+        // --- Método OnModelCreating (sin cambios) ---
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
-            // Especificar la precisión para todas las propiedades decimales
             modelBuilder.Entity<Producto>().Property(p => p.Precio).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<Venta>().Property(v => v.TotalVenta).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<DetalleVenta>().Property(d => d.PrecioUnitario).HasColumnType("decimal(18,2)");
@@ -33,26 +36,31 @@ namespace MiApi.Data
             modelBuilder.Entity<HistorialPrecio>().Property(h => h.PrecioAnterior).HasColumnType("decimal(18,2)");
             modelBuilder.Entity<HistorialPrecio>().Property(h => h.PrecioNuevo).HasColumnType("decimal(18,2)");
         }
+        // ------------------------------------------
 
-        public override int SaveChanges()
+        // --- REEMPLAZA SaveChanges POR SaveChangesAsync ---
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             var entries = ChangeTracker
                 .Entries()
-                .Where(e => e.Entity is BaseEntity && (
-                        e.State == EntityState.Added ||
-                        e.State == EntityState.Modified));
+                .Where(e => e.Entity is BaseEntity && ( // Asegúrate que tus modelos hereden de BaseEntity
+                        e.State == EntityState.Added
+                        || e.State == EntityState.Modified));
 
             foreach (var entityEntry in entries)
             {
-                ((BaseEntity)entityEntry.Entity).FechaModificacion = DateTime.Now;
+                // Usamos UtcNow para consistencia
+                ((BaseEntity)entityEntry.Entity).FechaModificacion = DateTime.UtcNow;
 
                 if (entityEntry.State == EntityState.Added)
                 {
-                    ((BaseEntity)entityEntry.Entity).FechaCreacion = DateTime.Now;
+                    ((BaseEntity)entityEntry.Entity).FechaCreacion = DateTime.UtcNow;
                 }
             }
 
-            return base.SaveChanges();
+            // Llamamos a la versión async de base
+            return base.SaveChangesAsync(cancellationToken);
         }
+        // ---------------------------------------------------
     }
 }

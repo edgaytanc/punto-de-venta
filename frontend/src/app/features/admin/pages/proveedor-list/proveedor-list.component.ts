@@ -39,7 +39,6 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
   dataSource: MatTableDataSource<Proveedor>;
   proveedores: Proveedor[] = [];
 
-  // ... (resto del TS sin cambios) ...
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -65,8 +64,10 @@ export default class ProveedorListComponent implements OnInit, AfterViewInit {
       next: (data) => {
         this.proveedores = data;
         this.dataSource.data = this.proveedores;
+        console.log('Proveedores cargad0s:', data); // Log para depurar
       },
       error: (err) => {
+        console.error('Error al cargar proveedores:', err); // Log de error
         this.mostrarNotificacion('Error al cargar proveedores');
       },
     });

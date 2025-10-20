@@ -1,3 +1,4 @@
+// ... (imports sin cambios) ...
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ProductoService } from '../../../../core/services/producto.service';
@@ -12,8 +13,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ProductoDialogComponent } from '../../components/producto-dialog/producto-dialog.component';
-
-// 1. Importamos el nuevo diálogo de confirmación
 import { ConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -31,26 +30,28 @@ import { ConfirmDialogComponent } from '../../../../core/components/confirm-dial
     MatTooltipModule,
     MatDialogModule,
     MatSnackBarModule,
-    // (No es necesario importar ConfirmDialogComponent aquí porque se carga dinámicamente)
   ],
   templateUrl: './producto-list.component.html',
   styleUrl: './producto-list.component.scss',
 })
 export default class ProductoListComponent implements OnInit, AfterViewInit {
 
+  // ---- AJUSTES EN COLUMNAS ----
   displayedColumns: string[] = [
     'id',
-    'nombre',
+    'nombreProducto', // <-- CAMBIO
+    // 'imagenUrl', // Opcional si quieres mostrarla
     'precio',
-    'costo',
-    'stockActual',
+    'stock', // <-- CAMBIO
     'acciones',
   ];
+  // ---- FIN AJUSTES ----
 
   dataSource: MatTableDataSource<Producto>;
   productos: Producto[] = [];
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  // ... (resto del TS sin cambios funcionales, solo nombres de propiedad si aplica) ...
+   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor(
@@ -75,6 +76,7 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
       next: (data) => {
         this.productos = data;
         this.dataSource.data = this.productos;
+        console.log('Productos cargados:', data); // Log para depurar
       },
       error: (err) => {
         console.error('Error al cargar productos:', err);
@@ -92,15 +94,16 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         const { id, ...nuevoProducto } = result;
-
-        this.productoService.createProducto(nuevoProducto).subscribe({
+        // Asegúrate que el objeto que envías coincida con lo que espera el backend
+        // Si el backend espera IdCategoria/IdProveedor, ya está correcto.
+        this.productoService.createProducto(nuevoProducto as Omit<Producto, 'id'>).subscribe({
           next: () => {
             this.mostrarNotificacion('Producto Creado');
             this.cargarProductos();
           },
           error: (err) => {
+            console.error('Error al crear producto:', err);
             this.mostrarNotificacion('Error al crear producto');
-            console.error(err);
           }
         });
       }
@@ -115,21 +118,22 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
+         // Asegúrate que el objeto que envías coincida con lo que espera el backend
+         // Si el backend espera IdCategoria/IdProveedor, ya está correcto.
         this.productoService.updateProducto(result.id, result).subscribe({
           next: () => {
             this.mostrarNotificacion('Producto Actualizado');
             this.cargarProductos();
           },
           error: (err) => {
+            console.error('Error al actualizar producto:', err);
             this.mostrarNotificacion('Error al actualizar producto');
-            console.error(err);
           }
         });
       }
     });
   }
 
-  // 2. LÓGICA DE ELIMINACIÓN ACTUALIZADA
   eliminarProducto(id: number): void {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
@@ -139,18 +143,16 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
       }
     });
 
-    // 3. Escuchamos el resultado del diálogo
     dialogRef.afterClosed().subscribe(result => {
-      // Si el usuario confirmó (result === true)
       if (result) {
         this.productoService.deleteProducto(id).subscribe({
           next: () => {
             this.mostrarNotificacion('Producto Eliminado');
-            this.cargarProductos(); // Recargamos la tabla
+            this.cargarProductos();
           },
           error: (err) => {
+            console.error('Error al eliminar producto:', err);
             this.mostrarNotificacion('Error al eliminar producto');
-            console.error(err);
           }
         });
       }

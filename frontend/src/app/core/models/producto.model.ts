@@ -3,18 +3,16 @@ import { Proveedor } from './proveedor.model';
 
 export interface Producto {
   id: number;
-  nombre: string;
-  descripcion?: string;
+  nombreProducto: string; // <-- CAMBIO
+  imagenUrl?: string;     // <-- AÑADIDO (opcional?)
   precio: number;
-  costo: number;
-  stockActual: number;
-  stockMinimo: number;
+  stock: number;         // <-- CAMBIO
 
-  // IDs de las relaciones
-  categoriaProductoId: number;
-  proveedorId: number;
+  // IDs de las relaciones (cambio de nombre)
+  idCategoria: number;    // <-- CAMBIO
+  idProveedor: number;    // <-- CAMBIO
 
-  // Propiedades de navegación (para datos anidados)
-  categoriaProducto?: Categoria;
+  // Propiedades de navegación (mantener para datos anidados si la API los devuelve)
+  categoria?: Categoria; // <-- CAMBIO (nombre de propiedad)
   proveedor?: Proveedor;
 }

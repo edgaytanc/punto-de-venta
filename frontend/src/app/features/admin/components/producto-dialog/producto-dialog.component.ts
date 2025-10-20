@@ -51,18 +51,17 @@ export class ProductoDialogComponent implements OnInit {
     // Inyectamos MAT_DIALOG_DATA para recibir el producto a editar
     @Inject(MAT_DIALOG_DATA) public data: { producto: Producto }
   ) {
-    // Definimos la estructura del formulario y sus validaciones
+    // ---- AJUSTES EN EL FORMULARIO ----
     this.productoForm = this.fb.group({
       id: [0],
-      nombre: ['', Validators.required],
-      descripcion: [''],
+      nombreProducto: ['', Validators.required], // <-- CAMBIO
+      imagenUrl: ['',Validators.required],                          // <-- AÑADIDO (opcional por ahora)
       precio: [0, [Validators.required, Validators.min(0)]],
-      costo: [0, [Validators.required, Validators.min(0)]],
-      stockActual: [0, [Validators.required, Validators.min(0)]],
-      stockMinimo: [0, [Validators.required, Validators.min(0)]],
-      categoriaProductoId: [null, Validators.required],
-      proveedorId: [null, Validators.required],
+      stock: [0, [Validators.required, Validators.min(0)]], // <-- CAMBIO
+      idCategoria: [null, Validators.required], // <-- CAMBIO
+      idProveedor: [null, Validators.required], // <-- CAMBIO
     });
+    // ---- FIN AJUSTES ----
 
     // Verificamos si recibimos un producto (modo edición)
     if (data && data.producto) {
