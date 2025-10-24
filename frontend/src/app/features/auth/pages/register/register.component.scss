@@ -1,0 +1,150 @@
+// Variables de estilo
+:host {
+  --primary-color: #007bff;
+  --error-color: #dc3545;
+  --light-gray: #f4f4f4;
+  --dark-gray: #555;
+  --border-color: #ddd;
+  --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+// Contenedor principal para centrar el formulario
+.register-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; // Ocupa toda la altura
+  background-color: var(--light-gray);
+  padding: 2rem;
+}
+
+// Tarjeta del formulario
+.register-card {
+  width: 100%;
+  max-width: 420px;
+  background-color: #ffffff;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid #e7e7e7;
+
+  h2 {
+    text-align: center;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  p {
+    text-align: center;
+    color: var(--dark-gray);
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem; // Espacio entre grupos de formulario
+}
+
+// Estilo de los grupos de formulario (label + input)
+.form-group {
+  display: flex;
+  flex-direction: column;
+
+  label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #444;
+    font-size: 0.9rem;
+  }
+
+  input[type='email'],
+  input[type='password'],
+  input[type='text'] {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box; // Asegura que el padding no afecte el ancho
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+    }
+
+    // Clase de error
+    &.invalid {
+      border-color: var(--error-color);
+    }
+  }
+}
+
+// Mensajes de validación (debajo del input)
+.validation-error {
+  margin-top: 0.4rem;
+  small {
+    color: var(--error-color);
+    font-size: 0.8rem;
+  }
+}
+
+// Mensaje de error de la API
+.api-error-message {
+  color: var(--error-color);
+  background-color: rgba(220, 53, 69, 0.05);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+// Botón de envío
+.btn-submit {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+  margin-top: 0.5rem; // Espacio antes del botón
+
+  &:hover {
+    background-color: #0056b3; // Un poco más oscuro en hover
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Link para iniciar sesión
+.login-link {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+
+  a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

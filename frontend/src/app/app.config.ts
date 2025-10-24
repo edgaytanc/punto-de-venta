@@ -3,8 +3,9 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
-// 1. Importa el provider
-import { provideHttpClient } from '@angular/common/http';
+// 1. Importa 'withInterceptors' (modificación) y tu interceptor (nuevo)
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { tokenInterceptor } from './core/interceptors/token.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,6 +14,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     provideAnimationsAsync(), // Esto lo añadió Angular Material
-    provideHttpClient()     // 2. Añádelo aquí
+
+    // 2. Modifica esta línea:
+    provideHttpClient(withInterceptors([tokenInterceptor]))
   ]
 };

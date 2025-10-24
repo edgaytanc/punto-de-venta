@@ -1,16 +1,30 @@
 import { Routes } from '@angular/router';
 
+// 1. Importamos los componentes de login y register
+import { LoginComponent } from './features/auth/pages/login/login.component';
+import { RegisterComponent } from './features/auth/pages/register/register.component';
+
 export const routes: Routes = [
-  // Ruta principal (Inicio)
-  // Por ahora la dejamos vacía, puedes crear un 'DashboardComponent' aquí más tarde.
+  // 2. Ruta principal (Inicio)
+  // Ahora redirige a 'login' por defecto
   {
     path: '',
     pathMatch: 'full',
-    // component: DashboardComponent
-    redirectTo: 'admin' // O redirigimos a admin por ahora
+    redirectTo: 'login',
+  },
+
+  // 3. Añadimos las nuevas rutas de autenticación
+  {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'register',
+    component: RegisterComponent,
   },
 
   // Ruta de Administración (Lazy Loaded)
+  // Esta ruta se queda igual, la protección se añade en el archivo 'admin.routes.ts'
   {
     path: 'admin',
     loadChildren: () =>
@@ -21,8 +35,6 @@ export const routes: Routes = [
   {
     path: 'ventas',
     // loadChildren: () => ...
-    redirectTo: 'admin' // Placeholder
-  }
-
-  // Puedes añadir más rutas aquí (login, etc.)
+    redirectTo: 'admin', // Placeholder
+  },
 ];
