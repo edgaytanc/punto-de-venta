@@ -1,18 +1,12 @@
-using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 
 namespace MiApi.Models
 {
-
-    public class Usuario : BaseEntity
+    // Heredamos de IdentityUser<int> para usar un 'int' como llave primaria
+    public class Usuario : IdentityUser<int>
     {
-        public string NombreUsuario { get; set; }
-        public string Correo { get; set; }
-        public string Contrasena { get; set; }
+        // IdentityUser ya tiene Id, UserName, Email, PasswordHash, etc.
+        // Podemos añadir propiedades personalizadas si es necesario.
         public bool Estado { get; set; }
-
-        // Relación con Rol
-        public int IdRol { get; set; }
-        [ForeignKey("IdRol")]
-        public Rol Rol { get; set; }
     }
 }

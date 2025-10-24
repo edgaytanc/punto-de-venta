@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization; // <-- AÑADE ESTE USING
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiApi.Data;
@@ -7,6 +8,7 @@ namespace MiApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize] // <-- AÑADE ESTA LÍNEA PARA REQUERIR AUTENTICACIÓN
     public class CategoriasController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
