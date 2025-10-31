@@ -5,7 +5,6 @@ namespace MiApi.DTOs
     public class LoginDto
     {
         [Required]
-        [EmailAddress]
         public string Username { get; set; }
 
         [Required]

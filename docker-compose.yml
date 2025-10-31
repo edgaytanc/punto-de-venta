@@ -28,6 +28,12 @@ services:
       - AdminUser__Username=admin
       # --- FIN DE LÍNEAS A AÑADIR ---
 
+      # --- AÑADIR ESTAS 3 LÍNEAS PARA EL TOKEN ---
+      - Jwt__Key=ESTA_ES_MI_CLAVE_SECRETA_SUPER_LARGA_Y_SEGURA_PARA_PRODUCCION_CAMBIAME
+      - Jwt__Issuer=https://tu-dominio.com
+      - Jwt__Audience=https://tu-dominio.com
+      # --- FIN DE LÍNEAS A AÑADIR ---
+
   frontend:
     build:
       context: ./frontend

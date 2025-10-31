@@ -51,12 +51,10 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        // Configura la serialización JSON para usar camelCase
-        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
-    }); 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+}); 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<TokenService>();
