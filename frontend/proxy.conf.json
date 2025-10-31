@@ -2,9 +2,6 @@
   "/api": {
     "target": "http://backend:8080",
     "secure": false,
-    "changeOrigin": true,
-    "pathRewrite": {
-      "^/api": "/api"
-    }
+    "changeOrigin": true
   }
 }
