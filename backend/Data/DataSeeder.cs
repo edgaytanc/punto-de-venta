@@ -23,13 +23,22 @@ namespace MiApi.Data
                 if (!roleExist)
                 {
                     // --- CAMBIO 2: Crear un objeto 'Rol', no 'IdentityRole' ---
-                    await roleManager.CreateAsync(new Rol { Name = roleName });
+                    
+                    // --- 👇 AQUÍ ESTÁ LA CORRECCIÓN ---
+                    // Añadimos un valor para DescripcionRol que no sea nulo
+                    await roleManager.CreateAsync(new Rol 
+                    { 
+                        Name = roleName, 
+                        DescripcionRol = $"Rol de {roleName}" // Puedes poner lo que quieras aquí
+                    });
+                    // --- 👆 FIN DE LA CORRECCIÓN ---
+
                     logger.LogInformation($"Rol '{roleName}' creado.");
                 }
             }
 
             var adminEmail = configuration["AdminUser:Email"] ?? "admin@pos.com";
-            var adminPassword = configuration["AdminUser:Password"] ?? "Admin123*";
+            var adminPassword = configuration["AdminUser:Password"] ?? "Admin12345";
             var adminUsername = configuration["AdminUser:Username"] ?? "admin";
             
             var adminUser = await userManager.FindByEmailAsync(adminEmail);
@@ -68,3 +77,4 @@ namespace MiApi.Data
         }
     }
 }
+

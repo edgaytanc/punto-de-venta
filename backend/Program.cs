@@ -7,30 +7,31 @@ using MiApi.Models;
 using MiApi.Services; // Para TokenService
 using System.Text; 
 using MiApi.Middleware; 
+// --- AÑADIR ESTOS DOS ---
+using Microsoft.Data.SqlClient;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- SECCIÓN DE CONFIGURACIÓN DE SERVICIOS ---
-
-// 1. Registrar el DbContext para la conexión con SQL Server
+// (Todo tu código de servicios va aquí... es el mismo que ya tienes)
+// 1. Registrar el DbContext...
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 // --- CONFIGURACIÓN DE IDENTITY ---
 builder.Services.AddIdentity<Usuario, Rol>(options => {
-    // Opciones de configuración de contraseña (puedes personalizarlas)
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
+    options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
 })
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
-// --- FIN DE LA CONFIGURACIÓN DE IDENTITY --- 
+// ... (El resto de AddIdentity y AddAuthentication) ...
 
-// --- CONFIGURACIÓN DE AUTENTICACIÓN JWT --- 
 builder.Services.AddAuthentication(options => {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,78 +42,103 @@ builder.Services.AddAuthentication(options => {
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-        ValidateIssuer = true, // Valida quién emitió el token
+        ValidateIssuer = true, 
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidateAudience = true, // Valida para quién es el token
+        ValidateAudience = true, 
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        ValidateLifetime = true, // Valida que el token no haya expirado
-        ClockSkew = TimeSpan.Zero // Elimina el margen de tiempo por defecto al validar expiración
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero 
     };
 });
-// --- FIN CONFIGURACIÓN JWT --- 
 
-
-// 2. Add services to the container.
 builder.Services.AddControllers(); 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-// --- AÑADIR EL SERVICIO DE TOKEN (si no lo tenías ya) ---
-// Es necesario para que AuthController pueda inyectarlo
 builder.Services.AddScoped<TokenService>();
 
 
 var app = builder.Build();
 
-// --- 👇 NUEVO: LÓGICA DE MIGRACIÓN Y SEEDING ---
-// Se ejecuta al iniciar la app, ANTES de aceptar peticiones
-try
+// --- 👇 INICIO: LÓGICA DE MIGRACIÓN Y SEEDING CON REINTENTOS ---
+// (REEMPLAZA TU BLOQUE TRY-CATCH CON ESTE)
+async Task InitializeDatabaseAsync(IHost host)
 {
-    // Creamos un "scope" de servicios para poder inyectarlos aquí
-    using (var scope = app.Services.CreateScope())
+    using (var scope = host.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
         var logger = services.GetRequiredService<ILogger<Program>>();
-        
-        logger.LogInformation("Iniciando la aplicación...");
-
-        // Obtener el DbContext
         var context = services.GetRequiredService<ApplicationDbContext>();
 
-        // Aplicar migraciones pendientes (Crucial para Docker)
-        if ((await context.Database.GetPendingMigrationsAsync()).Any())
-        {
-            logger.LogInformation("Aplicando migraciones pendientes...");
-            await context.Database.MigrateAsync();
-            logger.LogInformation("Migraciones aplicadas correctamente.");
-        }
-        else
-        {
-            logger.LogInformation("La base de datos ya está actualizada.");
-        }
+        var maxRetries = 10;
+        var retryDelay = TimeSpan.FromSeconds(5);
+        var retries = 0;
 
-        // Ejecutar el DataSeeder
-        logger.LogInformation("Ejecutando DataSeeder para roles y admin...");
-        await DataSeeder.SeedRolesAndAdminUserAsync(services); // Llama a la clase del Paso 1
-        logger.LogInformation("DataSeeder completado.");
+        while (retries < maxRetries)
+        {
+            try
+            {
+                logger.LogInformation($"Intento {retries + 1}/{maxRetries} de conectar a la base de datos...");
+                
+                // 1. Aplicar migraciones pendientes
+                if ((await context.Database.GetPendingMigrationsAsync()).Any())
+                {
+                    logger.LogInformation("Aplicando migraciones pendientes...");
+                    await context.Database.MigrateAsync();
+                    logger.LogInformation("Migraciones aplicadas correctamente.");
+                }
+                else
+                {
+                    logger.LogInformation("La base de datos ya está actualizada.");
+                }
+
+                // 2. Ejecutar el DataSeeder
+                logger.LogInformation("Ejecutando DataSeeder para roles y admin...");
+                await DataSeeder.SeedRolesAndAdminUserAsync(services);
+                logger.LogInformation("DataSeeder completado.");
+
+                // Si todo fue exitoso, salimos del bucle
+                break; 
+            }
+            catch (SqlException ex)
+            {
+                retries++;
+                logger.LogWarning(ex, $"No se pudo conectar a la base de datos (Intento {retries}). Reintentando en {retryDelay.TotalSeconds} segundos...");
+                if (retries >= maxRetries)
+                {
+                    logger.LogCritical(ex, "No se pudo conectar a la base de datos después de varios intentos. La aplicación no puede iniciar.");
+                    throw; // Lanza la excepción si se superan los reintentos
+                }
+                await Task.Delay(retryDelay); // Espera antes de reintentar
+            }
+            catch (Exception ex)
+            {
+                // Captura cualquier otro error durante el seeding (ej. validación)
+                logger.LogCritical(ex, "Ocurrió un error crítico durante la migración o el seeding.");
+                throw; // Lanza para que la app falle y no inicie en un estado corrupto
+            }
+        }
     }
+}
+
+// Ejecutamos la inicialización
+try
+{
+    await InitializeDatabaseAsync(app);
 }
 catch (Exception ex)
 {
-    // Si algo falla al migrar o sembrar, lo capturamos
+    // Si la inicialización falla (después de reintentos), detenemos la app.
     var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogCritical(ex, "Ocurrió un error durante la migración o el seeding de la base de datos.");
+    logger.LogCritical(ex, "La inicialización de la base de datos falló. La aplicación se detendrá.");
+    return; // Detiene el inicio de la aplicación
 }
 // --- 👆 FIN DE LA LÓGICA DE SEEDING ---
 
 
 // --- SECCIÓN DE CONFIGURACIÓN DEL PIPELINE HTTP ---
-
-// REGISTRAR EL MIDDLEWARE DE MANEJO DE ERRORES
-// Debe ir muy al principio del pipeline
+// (Tu código sigue igual desde aquí)
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -120,13 +146,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-// AÑADIR MIDDLEWARE DE AUTENTICACIÓN Y AUTORIZACIÓN
-// ¡Importante! Deben ir ANTES de MapControllers
-app.UseAuthentication(); // Verifica quién es el usuario (lee el token)
-app.UseAuthorization();  // Verifica qué puede hacer el usuario (roles, políticas)
-
-// Habilita el enrutamiento para los controladores
+app.UseAuthentication();
+app.UseAuthorization();  
 app.MapControllers();
-
 app.Run();
