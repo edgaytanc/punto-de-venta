@@ -22,6 +22,12 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=MiBaseDeDatos;User=sa;Password=TuPasswordSeguro123!;TrustServerCertificate=true;
 
+      # --- AÑADIR ESTAS 3 LÍNEAS AQUÍ ---
+      - AdminUser__Email=admin@pos.com
+      - AdminUser__Password=admin1234 # ¡IMPORTANTE! Cambia esto por una contraseña segura y diferente a la de la BD
+      - AdminUser__Username=admin
+      # --- FIN DE LÍNEAS A AÑADIR ---
+
   frontend:
     build:
       context: ./frontend

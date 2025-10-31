@@ -6,7 +6,7 @@ services:
       target: build # Le dice a Docker que use la etapa "build" del Dockerfile
     
     ports:
-      - "4200:4200" # Mapea al puerto de ng serve
+      - "5001:4200" # Mapea al puerto de ng serve
     # --- FIN DE CAMBIOS ---
       
     # ---- LÍNEA MODIFICADA ----
