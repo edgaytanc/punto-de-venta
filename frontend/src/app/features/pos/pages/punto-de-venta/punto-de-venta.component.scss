@@ -1,0 +1,151 @@
+:host {
+  display: block;
+  padding: 24px;
+  background-color: #f4f7fa; // Fondo ligero para la página
+  min-height: calc(100vh - 64px); // Asumiendo un navbar de 64px
+}
+
+.w-full {
+  width: 100%;
+}
+
+.pos-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr; // 66% para el carrito, 33% para la búsqueda
+  gap: 24px;
+}
+
+// --- Columna Carrito (Izquierda) ---
+
+.carrito-card {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px - 48px); // Alto total menos padding
+}
+
+.carrito-content {
+  flex-grow: 1; // Hace que el contenido crezca
+  overflow-y: auto; // Scroll si la lista es larga
+  padding: 0 !important;
+}
+
+.carrito-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  padding: 2rem;
+
+  mat-icon {
+    font-size: 60px;
+    width: 60px;
+    height: 60px;
+  }
+  p {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+}
+
+// Estilos de la lista/tabla del carrito
+.list-header,
+.list-item {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1.5fr 1.5fr 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 24px;
+}
+
+.list-header {
+  font-weight: 600;
+  color: #555;
+  border-bottom: 2px solid #eee;
+  font-size: 0.9rem;
+}
+
+.list-item {
+  border-bottom: 1px solid #f0f0f0;
+
+  &:hover {
+    background-color: #fafafa;
+  }
+}
+
+// Definición de columnas
+.col-prod { grid-column: 1; font-weight: 500; }
+.col-cant { grid-column: 2; }
+.col-precio { grid-column: 3; }
+.col-subtotal { grid-column: 4; font-weight: 500; }
+.col-accion { grid-column: 5; text-align: right; }
+
+.input-cantidad {
+  width: 60px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+// Acciones y Total (Pie de tarjeta)
+.carrito-total-acciones {
+  padding: 16px 24px !important;
+  border-top: 2px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-display {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.total-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #777;
+}
+
+.total-monto {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.acciones-botones {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-finalizar {
+  padding: 0 32px;
+  height: 48px;
+  font-size: 1.1rem;
+  line-height: 48px;
+}
+
+// --- Columna Búsqueda (Derecha) ---
+.busqueda-card {
+  .mat-form-field {
+    margin-bottom: 1rem;
+  }
+}
+
+.producto-encontrado-card {
+  margin-top: 1rem;
+  background-color: #fcfcfc;
+  border: 1px solid #eee;
+}
+
+.busqueda-no-encontrado {
+  text-align: center;
+  padding: 1.5rem;
+  color: #888;
+}

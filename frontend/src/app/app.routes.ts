@@ -1,19 +1,25 @@
 import { Routes } from '@angular/router';
 
-// 1. Importamos los componentes de login y register
+// 1. Importamos los componentes de Auth (ya existentes)
 import { LoginComponent } from './features/auth/pages/login/login.component';
 import { RegisterComponent } from './features/auth/pages/register/register.component';
 
+// --- 👇 NUEVAS IMPORTACIONES ---
+// 2. Importamos el nuevo componente del POS
+import { PuntoDeVentaComponent } from './features/pos/pages/punto-de-venta/punto-de-venta.component';
+// 3. Importamos el guardián de autenticación
+import { authGuard } from './core/guards/auth.guard';
+// --- 👆 FIN NUEVAS IMPORTACIONES ---
+
 export const routes: Routes = [
-  // 2. Ruta principal (Inicio)
-  // Ahora redirige a 'login' por defecto
+  // Ruta principal (Inicio)
   {
     path: '',
     pathMatch: 'full',
     redirectTo: 'login',
   },
 
-  // 3. Añadimos las nuevas rutas de autenticación
+  // Rutas de Autenticación
   {
     path: 'login',
     component: LoginComponent,
@@ -24,17 +30,18 @@ export const routes: Routes = [
   },
 
   // Ruta de Administración (Lazy Loaded)
-  // Esta ruta se queda igual, la protección se añade en el archivo 'admin.routes.ts'
   {
     path: 'admin',
     loadChildren: () =>
       import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
+    // (La protección 'canActivate' ya está definida dentro de admin.routes.ts)
   },
 
-  // Ruta de Ventas (a futuro)
+  // --- 👇 RUTA NUEVA AÑADIDA ---
+  // 4. Añadimos la ruta principal del Punto de Venta
   {
-    path: 'ventas',
-    // loadChildren: () => ...
-    redirectTo: 'admin', // Placeholder
+    path: 'pos',
+    component: PuntoDeVentaComponent,
+    canActivate: [authGuard], // <-- ¡Ruta protegida!
   },
 ];

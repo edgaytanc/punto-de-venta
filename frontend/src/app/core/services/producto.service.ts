@@ -24,6 +24,14 @@ export class ProductoService {
 
   /**
    * Obtiene un producto específico por su ID.
+   * GET /api/productos/{id}
+   */
+  getProducto(id: number): Observable<Producto> {
+    return this.http.get<Producto>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Obtiene un producto específico por su ID.
    * Corresponde a: GET /api/Productos/{id}
    */
   getProductoById(id: number): Observable<Producto> {
