@@ -192,5 +192,83 @@ namespace MiApi.Controllers
                 }).ToList() ?? new List<DetalleVentaDto>()
             };
         }
+
+        // --- PEGAR ESTOS DOS MÉTODOS DENTRO DE VentasController.cs ---
+
+        /// <summary>
+        /// Obtiene todas las ventas registradas por un usuario específico.
+        /// GET: api/ventas/usuario/5
+        /// </summary>
+        [HttpGet("usuario/{usuarioId}")]
+        public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasPorUsuario(int usuarioId)
+        {
+            // Verificamos si el usuario existe
+            var usuarioExiste = await _userManager.FindByIdAsync(usuarioId.ToString());
+            if (usuarioExiste == null)
+            {
+                return NotFound($"No se encontró un usuario con ID {usuarioId}.");
+            }
+
+            // Buscamos las ventas
+            var ventas = await _context.Ventas
+                .Include(v => v.Cliente)
+                .Include(v => v.Usuario)
+                .Where(v => v.IdUsuario == usuarioId) // <-- El filtro por ID de Usuario
+                .OrderByDescending(v => v.FechaVenta)
+                .Select(v => new VentaDto // Mapeo simplificado (sin detalles)
+                {
+                    Id = v.Id,
+                    FechaVenta = v.FechaVenta,
+                    TotalVenta = v.TotalVenta,
+                    IdCliente = v.IdCliente,
+                    NombreCliente = v.Cliente.Nombre,
+                    IdUsuario = v.IdUsuario,
+                    NombreUsuario = v.Usuario.UserName,
+                    Detalles = null
+                })
+                .ToListAsync();
+
+            return Ok(ventas);
+        }
+
+
+        /// <summary>
+        /// Obtiene todas las ventas dentro de un rango de fechas.
+        /// GET: api/ventas/fecha?fechaInicio=2023-10-01&fechaFin=2023-10-31
+        /// </summary>
+        [HttpGet("fecha")]
+        public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasPorFecha(
+            [FromQuery] DateTime fechaInicio,
+            [FromQuery] DateTime fechaFin)
+        {
+            // Para asegurarnos de que la fecha final incluya todo el día,
+            // la ajustamos a las 23:59:59 de ese día.
+            var fechaFinAjustada = fechaFin.Date.AddDays(1).AddTicks(-1);
+            var fechaInicioAjustada = fechaInicio.Date; // Asegura que empezamos desde las 00:00
+
+            var ventas = await _context.Ventas
+                .Include(v => v.Cliente)
+                .Include(v => v.Usuario)
+                .Where(v => v.FechaVenta >= fechaInicioAjustada && v.FechaVenta <= fechaFinAjustada) // <-- El filtro por rango de fechas
+                .OrderByDescending(v => v.FechaVenta)
+                .Select(v => new VentaDto // Mapeo simplificado (sin detalles)
+                {
+                    Id = v.Id,
+                    FechaVenta = v.FechaVenta,
+                    TotalVenta = v.TotalVenta,
+                    IdCliente = v.IdCliente,
+                    NombreCliente = v.Cliente.Nombre,
+                    IdUsuario = v.IdUsuario,
+                    NombreUsuario = v.Usuario.UserName,
+                    Detalles = null
+                })
+                .ToListAsync();
+
+            return Ok(ventas);
+        }
+
+        // --- FIN DE LOS MÉTODOS A PEGAR ---
     }
+
+
 }

@@ -1,0 +1,95 @@
+@use 'styles/variables' as var;
+
+:host {
+  display: block;
+}
+
+h2 {
+  color: var.$color-primary;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mat-typography {
+  padding-top: 1rem;
+}
+
+.info-list {
+  padding-top: 0;
+  padding-bottom: 1rem;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 1rem 0;
+}
+
+h3 {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Tabla de Detalles */
+.detalle-table-container {
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-header-cell {
+  background-color: var.$color-accent-light;
+  color: var.$color-accent-dark;
+}
+
+/* Alineación celdas tabla detalle */
+.cell-center {
+  text-align: center;
+}
+.cell-right {
+  text-align: right;
+  font-weight: 500;
+}
+
+.mat-column-cantidad {
+  width: 80px;
+}
+.mat-column-precioUnitario,
+.mat-column-subtotal {
+  width: 120px;
+}
+
+
+/* Resumen del Total */
+.total-summary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem 1rem;
+  background-color: var.$color-primary-light;
+  border-radius: 8px;
+  margin-top: 1rem;
+
+  .total-label {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var.$color-text-light;
+  }
+
+  .total-valor {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var.$color-primary-dark;
+  }
+}
+
+mat-dialog-actions {
+  padding: 1rem 1.5rem;
+}

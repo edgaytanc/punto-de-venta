@@ -5,7 +5,7 @@ import { DetalleVenta, DetalleVentaCreate } from './detalle-venta.model';
  * Se usa para enviar los datos al crear una nueva venta.
  */
 export interface VentaCreate {
-  usuarioId: number;
+  // usuarioId: number;
   IdCliente: number; // Tu DTO C# usa 'int?' (nullable int)
   Detalles: DetalleVentaCreate[];
 }
@@ -16,11 +16,11 @@ export interface VentaCreate {
  */
 export interface Venta {
   id: number;
-  usuarioId: number;
-  usuarioNombre: string;
-  clienteId?: number | null; // Tu DTO C# usa 'int?'
-  clienteNombre?: string | null; // Tu DTO C# usa 'string?'
   fechaVenta: string; // C# DateTime se serializa como string (ISO 8601)
-  total: number;
-  detalles: DetalleVenta[];
+  totalVenta: number; // Coincide con VentaDto.TotalVenta
+  idCliente: number;
+  nombreCliente?: string | null; // Coincide con VentaDto.NombreCliente
+  idUsuario: number;
+  nombreUsuario?: string | null; // Coincide con VentaDto.NombreUsuario
+  detalles?: DetalleVenta[] | null; // El DTO permite null
 }

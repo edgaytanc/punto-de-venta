@@ -1,0 +1,83 @@
+/* Importamos los estilos y variables globales */
+@use 'styles/variables' as var;
+@use 'styles/mixins' as mixins;
+
+:host {
+  display: block;
+}
+
+.admin-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  h1 {
+    color: var.$color-primary;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+}
+
+/* Contenedor de la tabla */
+.table-container {
+  overflow: auto; // Permite scroll horizontal en pantallas pequeñas
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+}
+
+/* Definiciones de celdas */
+.mat-column-id {
+  width: 80px;
+}
+
+.mat-column-totalVenta {
+  width: 150px;
+}
+
+.mat-column-acciones {
+  width: 100px;
+}
+
+/* Alineación de celdas */
+.cell-right {
+  text-align: right;
+  justify-content: flex-end;
+  font-weight: 500;
+}
+
+.col-acciones {
+  text-align: center;
+}
+
+/* Estilos de cabecera */
+th.mat-header-cell {
+  background-color: var.$color-primary-light;
+  color: var.$color-primary-dark;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Sombra de carga */
+.loading-shade {
+  @include mixins.flex-center;
+  flex-direction: column;
+  gap: 1rem;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  z-index: 10;
+  border-radius: 8px;
+
+  p {
+    font-size: 1.1rem;
+    color: var.$color-text-light;
+  }
+}

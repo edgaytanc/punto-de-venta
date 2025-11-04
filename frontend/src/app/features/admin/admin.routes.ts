@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import ProductoListComponent from './pages/producto-list/producto-list.component';
 import CategoriaListComponent from './pages/categoria-list/categoria-list.component';
 import ProveedorListComponent from './pages/proveedor-list/proveedor-list.component';
+import ReporteVentasComponent from './pages/reporte-ventas/reporte-ventas.component';
 
 // 1. Importamos el guardián que creamos
 import { authGuard } from '../../core/guards/auth.guard';
@@ -28,6 +29,12 @@ export const ADMIN_ROUTES: Routes = [
     path: 'proveedores',
     component: ProveedorListComponent,
     // 4. Añadimos el guardián
+    canActivate: [authGuard],
+  },
+  {
+    path: 'reporte-ventas',
+    component: ReporteVentasComponent,
+    // 5. Añadimos el guardián
     canActivate: [authGuard],
   },
 ];

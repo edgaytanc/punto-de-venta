@@ -244,7 +244,7 @@ export class PuntoDeVentaComponent implements OnInit {
 
     // 4. Crear el objeto VentaCreate
     const nuevaVenta: VentaCreate = {
-      usuarioId: this.currentUser.id,
+      // usuarioId: this.currentUser.id,
       IdCliente: 1, // Dejamos clienteId como nulo por ahora
       Detalles: detallesVenta,
     };
