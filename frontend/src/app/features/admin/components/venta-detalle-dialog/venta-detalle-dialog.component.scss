@@ -1,11 +1,9 @@
-@use 'styles/variables' as var;
-
 :host {
   display: block;
 }
 
 h2 {
-  color: var.$color-primary;
+  color: var(--color-primary); /* Corregido */
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -44,8 +42,8 @@ table {
 }
 
 th.mat-header-cell {
-  background-color: var.$color-accent-light;
-  color: var.$color-accent-dark;
+  background-color: var(--color-accent-light); /* Corregido */
+  color: var(--color-accent-dark); /* Corregido */
 }
 
 /* Alineación celdas tabla detalle */
@@ -65,7 +63,6 @@ th.mat-header-cell {
   width: 120px;
 }
 
-
 /* Resumen del Total */
 .total-summary {
   display: flex;
@@ -73,20 +70,20 @@ th.mat-header-cell {
   align-items: center;
   gap: 1.5rem;
   padding: 1.5rem 1rem;
-  background-color: var.$color-primary-light;
+  background-color: var(--color-primary-light); /* Corregido */
   border-radius: 8px;
   margin-top: 1rem;
 
   .total-label {
     font-size: 1.1rem;
     font-weight: 500;
-    color: var.$color-text-light;
+    color: var(--color-text-light); /* Corregido */
   }
 
   .total-valor {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var.$color-primary-dark;
+    color: var(--color-primary-dark); /* Corregido */
   }
 }
 
