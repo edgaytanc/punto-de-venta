@@ -3,9 +3,8 @@
  * Se usa para enviar los datos al crear una nueva venta.
  */
 export interface DetalleVentaCreate {
-  productoId: number;
-  cantidad: number;
-  precioUnitario: number;
+  IdProducto: number;
+  Cantidad: number;
 }
 
 /**

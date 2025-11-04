@@ -10,7 +10,7 @@ export class ProductoService {
 
   // Esta es la URL de tu API de backend.
   // Gracias al proxy que configuramos, podemos usar una ruta relativa.
-  private apiUrl = '/api/Productos';
+  private apiUrl = '/api/productos';
 
   constructor(private http: HttpClient) {}
 

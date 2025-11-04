@@ -8,7 +8,7 @@ import { Categoria } from '../models/categoria.model';
 })
 export class CategoriaService {
 
-  private apiUrl = '/api/Categorias'; // URL del endpoint de Categorías
+  private apiUrl = '/api/categorias'; // URL del endpoint de Categorías
 
   constructor(private http: HttpClient) {}
 

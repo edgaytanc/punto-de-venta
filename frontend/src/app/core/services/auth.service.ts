@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { jwtDecode } from 'jwt-decode'; // <-- 1. Importar la nueva librería
+import { jwtDecode } from 'jwt-decode';
 
 import { AuthResponse } from '../models/token.model';
 import { Login } from '../models/login.model';
@@ -12,7 +12,7 @@ import { User } from '../models/user.model';
 interface DecodedToken {
   sub: string;
   email: string;
-  unique_name: string; // ASP.NET Core usa 'unique_name' para el UserName por defecto
+  unique_name: string; // ASP.NET Core usa 'unique_name' para el UserName
   exp: number;
 }
 
@@ -28,71 +28,71 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor() {
-    // --- 👇 2. LLAMAR A LA NUEVA FUNCIÓN ---
-    // Al iniciar el servicio, intenta cargar el usuario si hay un token
+    // ESTA LÓGICA ES PARA RECARGAR LA PÁGINA
     this.loadUserFromToken();
   }
 
   /**
-   * Envía las credenciales de login al backend.
+   * Lógica para Iniciar Sesión (Login)
    */
   login(credentials: Login): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiBaseUrl}/login`, credentials).pipe(
       tap((response) => {
-        this.saveAuthData(response.token);
+        // Al hacer login, usamos los datos frescos del API
+        this.saveAuthData(response.token, response.user);
       })
     );
   }
 
   /**
-   * Envía los datos de registro al backend.
+   * Lógica para Registrarse
    */
   register(userInfo: Register): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiBaseUrl}/register`, userInfo).pipe(
       tap((response) => {
-        this.saveAuthData(response.token);
+        // Al registrarse, usamos los datos frescos del API
+        this.saveAuthData(response.token, response.user);
       })
     );
   }
 
-  /**
-   * Cierra la sesión del usuario.
-   */
   logout(): void {
     localStorage.removeItem('token');
     this.currentUserSubject.next(null);
   }
 
-  /**
-   * Obtiene el token JWT actual.
-   */
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
   /**
-   * Verifica si el usuario está logueado.
+   * Revisa si el usuario está logueado Y si su token no ha expirado
    */
   isLoggedIn(): boolean {
     const token = this.getToken();
     if (!token) {
       return false;
     }
-    // Opcional: podrías también verificar si el token ha expirado aquí
-    return true;
+
+    try {
+      const decodedToken: DecodedToken = jwtDecode(token);
+      const isExpired = Date.now() >= decodedToken.exp * 1000;
+      return !isExpired;
+    } catch (error) {
+      return false; // Token inválido
+    }
   }
 
   /**
-   * Método privado para guardar el token y decodificarlo.
+   * Guarda el token y publica el objeto User (para Login/Register)
    */
-  private saveAuthData(token: string): void {
+  private saveAuthData(token: string, user: User): void {
     localStorage.setItem('token', token);
-    this.loadUserFromToken(); // Decodifica y actualiza el usuario
+    this.currentUserSubject.next(user);
   }
 
-  // --- 👇 3. IMPLEMENTAR LA NUEVA FUNCIÓN ---
   /**
-   * Carga y decodifica el token desde localStorage para restaurar el estado del usuario.
+   * Carga al usuario desde el token (para Recargar Página)
    */
   private loadUserFromToken(): void {
     const token = this.getToken();
@@ -100,19 +100,27 @@ export class AuthService {
       try {
         const decodedToken: DecodedToken = jwtDecode(token);
 
-        // Creamos el objeto User a partir de los datos del token
+        // Revisa si el token ha expirado
+        const isExpired = Date.now() >= decodedToken.exp * 1000;
+        if (isExpired) {
+          console.warn('Token expirado, limpiando sesión.');
+          this.logout();
+          return;
+        }
+
+        // Si no ha expirado, crea el usuario desde el token
         const user: User = {
           id: Number(decodedToken.sub), // 'sub' es el ID del usuario
           email: decodedToken.email,
           username: decodedToken.unique_name,
         };
 
-        // Actualizamos el BehaviorSubject para que toda la app sepa quién es el usuario
+        // Actualiza el estado de la app
         this.currentUserSubject.next(user);
 
       } catch (error) {
-        console.error('Error al decodificar el token:', error);
-        this.logout(); // Si el token es inválido, limpiamos la sesión
+        console.error('Token inválido, limpiando sesión:', error);
+        this.logout(); // Limpia si el token es basura
       }
     }
   }

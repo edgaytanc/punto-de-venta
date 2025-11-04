@@ -8,7 +8,7 @@ import { Proveedor } from '../models/proveedor.model';
 })
 export class ProveedorService {
 
-  private apiUrl = '/api/Proveedores'; // URL del endpoint de Proveedores
+  private apiUrl = '/api/proveedores'; // URL del endpoint de Proveedores
 
   constructor(private http: HttpClient) {}
 

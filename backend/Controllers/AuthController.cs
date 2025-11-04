@@ -59,6 +59,7 @@ namespace MiApi.Controllers
 
             return Ok(new UserDto
             {
+                Id = user.Id,
                 Username = user.UserName,
                 Email = user.Email,
                 Token = await _tokenService.CreateToken(user) // Opcional: devolver token al registrarse
@@ -93,6 +94,7 @@ namespace MiApi.Controllers
             // Si la contraseña es correcta, generar y devolver el token
             return Ok(new UserDto
             {
+                Id = user.Id,
                 Username = user.UserName,
                 Email = user.Email,
                 Token = await _tokenService.CreateToken(user)

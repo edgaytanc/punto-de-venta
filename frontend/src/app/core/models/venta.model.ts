@@ -6,8 +6,8 @@ import { DetalleVenta, DetalleVentaCreate } from './detalle-venta.model';
  */
 export interface VentaCreate {
   usuarioId: number;
-  clienteId?: number | null; // Tu DTO C# usa 'int?' (nullable int)
-  detalles: DetalleVentaCreate[];
+  IdCliente: number; // Tu DTO C# usa 'int?' (nullable int)
+  Detalles: DetalleVentaCreate[];
 }
 
 /**

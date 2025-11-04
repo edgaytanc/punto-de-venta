@@ -11,43 +11,38 @@
 
       <mat-card-content class="carrito-content">
         @if (carrito.length === 0) {
-          <div class="carrito-vacio">
-            <mat-icon>shopping_cart_checkout</mat-icon>
-            <p>El carrito está vacío</p>
-            <span>Busca un producto para comenzar</span>
-          </div>
+        <div class="carrito-vacio">
+          <mat-icon>shopping_cart_checkout</mat-icon>
+          <p>El carrito está vacío</p>
+          <span>Busca un producto para comenzar</span>
+        </div>
         } @else {
-          <mat-list>
-            <div mat-list-item class="list-header">
-              <span class="col-prod">Producto</span>
-              <span class="col-cant">Cant.</span>
-              <span class="col-precio">Precio</span>
-              <span class="col-subtotal">Subtotal</span>
-              <span class="col-accion"></span>
-            </div>
+        <mat-list>
+          <div mat-list-item class="list-header">
+            <span class="col-prod">Producto</span>
+            <span class="col-cant">Cant.</span>
+            <span class="col-precio">Precio</span>
+            <span class="col-subtotal">Subtotal</span>
+            <span class="col-accion"></span>
+          </div>
 
-            @for (item of carrito; track item.productoId) {
-              <div mat-list-item class="list-item">
-                <span class="col-prod">{{ item.nombreProducto }}</span>
-                <span class="col-cant">
-                  <input
-                    type="number"
-                    [value]="item.cantidad"
-                    (change)="actualizarCantidad(item, $event)"
-                    class="input-cantidad"
-                    title="Cantidad"
-                    placeholder="Cantidad">
-                </span>
-                <span class="col-precio">{{ item.precioUnitario | currency:'Q' }}</span>
-                <span class="col-subtotal">{{ item.subtotal | currency:'Q' }}</span>
-                <span class="col-accion">
-                  <button mat-icon-button color="warn" (click)="eliminarItem(item.productoId)">
-                    <mat-icon>delete_outline</mat-icon>
-                  </button>
-                </span>
-              </div>
-            }
-            </mat-list>
+          @for (item of carrito; track item.productoId) {
+          <div mat-list-item class="list-item">
+            <span class="col-prod">{{ item.nombreProducto }}</span>
+            <span class="col-cant">
+              <input type="number" [value]="item.cantidad" (change)="actualizarCantidad(item, $event)"
+                class="input-cantidad" title="Cantidad" placeholder="Cantidad">
+            </span>
+            <span class="col-precio">{{ item.precioUnitario | currency:'Q' }}</span>
+            <span class="col-subtotal">{{ item.subtotal | currency:'Q' }}</span>
+            <span class="col-accion">
+              <button mat-icon-button color="warn" (click)="eliminarItem(item.productoId)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </span>
+          </div>
+          }
+        </mat-list>
         }
       </mat-card-content>
 
@@ -60,11 +55,7 @@
           <button mat-stroked-button color="warn" [disabled]="carrito.length === 0">
             Cancelar
           </button>
-          <button
-            mat-flat-button
-            color="primary"
-            class="btn-finalizar"
-            [disabled]="carrito.length === 0 || isLoading"
+          <button mat-flat-button color="primary" class="btn-finalizar" [disabled]="carrito.length === 0 || isLoading"
             (click)="finalizarVenta()">
             {{ isLoading ? 'Procesando...' : 'Finalizar Venta' }}
           </button>
@@ -79,18 +70,12 @@
         <mat-card-title>Búsqueda de Productos</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <form (ngSubmit)="buscarProducto()">
+        <!-- 1. Quitamos (ngSubmit) de la etiqueta <form> -->
+        <form>
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Buscar por ID o Código</mat-label>
-            <input
-              matInput
-              type="text"
-              [formControl]="searchControl"
-              placeholder="12345">
-            <button
-              mat-icon-button
-              matSuffix
-              type="submit"
+            <input matInput type="text" [formControl]="searchControl" placeholder="12345">
+            <button mat-icon-button matSuffix type="button" (click)="buscarProducto()"
               [disabled]="!searchControl.value || isLoading">
               <mat-icon>search</mat-icon>
             </button>
@@ -98,27 +83,27 @@
         </form>
 
         @if (productoEncontrado) {
-          <mat-card class="producto-encontrado-card">
-            <mat-card-header>
-              <mat-card-title>{{ productoEncontrado.nombreProducto }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <p>Precio: <strong>{{ productoEncontrado.precio | currency:'Q' }}</strong></p>
-              <p>Stock: <strong>{{ productoEncontrado.stock }}</strong></p>
-            </mat-card-content>
-            <mat-card-actions align="end">
-              <button mat-flat-button color="primary" (click)="agregarAlCarrito(productoEncontrado)">
-                <mat-icon>add_shopping_cart</mat-icon>
-                Añadir al Carrito
-              </button>
-            </mat-card-actions>
-          </mat-card>
+        <mat-card class="producto-encontrado-card">
+          <mat-card-header>
+            <mat-card-title>{{ productoEncontrado.nombreProducto }}</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <p>Precio: <strong>{{ productoEncontrado.precio | currency:'Q' }}</strong></p>
+            <p>Stock: <strong>{{ productoEncontrado.stock }}</strong></p>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button mat-flat-button color="primary" (click)="agregarAlCarrito(productoEncontrado)">
+              <mat-icon>add_shopping_cart</mat-icon>
+              Añadir al Carrito
+            </button>
+          </mat-card-actions>
+        </mat-card>
         }
 
         @if (productoNoEncontrado) {
-          <div class="busqueda-no-encontrado">
-            <p>Producto no encontrado.</p>
-          </div>
+        <div class="busqueda-no-encontrado">
+          <p>Producto no encontrado.</p>
+        </div>
         }
 
       </mat-card-content>

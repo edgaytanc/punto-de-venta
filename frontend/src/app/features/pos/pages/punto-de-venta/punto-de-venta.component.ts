@@ -70,6 +70,9 @@ export class PuntoDeVentaComponent implements OnInit {
   ngOnInit(): void {
     // Obtenemos el usuario actual (con ID: number)
     this.authService.currentUser$.subscribe((user) => {
+
+      console.log('DATOS DEL USUARIO ACTUAL (desde ngOnInit):', user);
+
       this.currentUser = user;
     });
   }
@@ -233,18 +236,21 @@ export class PuntoDeVentaComponent implements OnInit {
     // Esto transforma la interfaz interna a la que espera el DTO
     const detallesVenta: DetalleVentaCreate[] = this.carrito.map((item) => {
       return {
-        productoId: item.productoId,
-        cantidad: item.cantidad,
-        precioUnitario: item.precioUnitario,
+        IdProducto: item.productoId,
+        Cantidad: item.cantidad,
+        // precioUnitario: item.precioUnitario,
       };
     });
 
     // 4. Crear el objeto VentaCreate
     const nuevaVenta: VentaCreate = {
       usuarioId: this.currentUser.id,
-      clienteId: null, // Dejamos clienteId como nulo por ahora
-      detalles: detallesVenta,
+      IdCliente: 1, // Dejamos clienteId como nulo por ahora
+      Detalles: detallesVenta,
     };
+
+    // Imprime el objeto 'nuevaVenta' en la consola del navegador
+    console.log('ENVIANDO AL BACKEND:', nuevaVenta);
 
     // 5. Llamar a this.ventaService.crearVenta(venta)
     this.isLoading = true;

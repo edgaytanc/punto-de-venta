@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace MiApi.Controllers
 {
@@ -31,33 +32,72 @@ namespace MiApi.Controllers
         [HttpPost]
         public async Task<ActionResult<VentaDto>> PostVenta(VentaCreateDto ventaDto)
         {
+            // Usamos 'Sub' que es el que arreglamos
+            // var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdClaim, out int usuarioId)) return Unauthorized("...");
+
+            if (!int.TryParse(userIdClaim, out int usuarioId))
+                return Unauthorized("No se pudo identificar al usuario desde el token.");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // ... (Validaciones y lógica de creación de Venta y Detalles sin cambios)...
-                 decimal totalVentaCalculado = 0;
-                var detallesVenta = new List<DetalleVenta>();
+                // 1. Validar Cliente
                 var cliente = await _context.Clientes.FindAsync(ventaDto.IdCliente);
-                if (cliente == null) {/*... rollback y badrequest ...*/}
-
-                foreach (var detalleDto in ventaDto.Detalles)
+                if (cliente == null)
                 {
-                   // ... (Validación producto, stock, actualización stock, creación DetalleVenta y DetalleInventario)...
-                   var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
-                    if (producto == null){/*... rollback y badrequest ...*/}
-                    if (producto.Stock < detalleDto.Cantidad){/*... rollback y badrequest ...*/}
-                    producto.Stock -= detalleDto.Cantidad;
-                    _context.Entry(producto).State = EntityState.Modified;
-                    var detalleVenta = new DetalleVenta {/*...*/};
-                     detallesVenta.Add(detalleVenta);
-                    totalVentaCalculado += detalleVenta.Subtotal;
-                     var detalleInventario = new DetalleInventario {/*...*/};
-                     _context.DetallesInventario.Add(detalleInventario);
+                    await transaction.RollbackAsync();
+                    return BadRequest($"El cliente con ID {ventaDto.IdCliente} no existe.");
                 }
 
+                decimal totalVentaCalculado = 0;
+                var detallesVenta = new List<DetalleVenta>();
+
+                // 2. Procesar Detalles (¡AQUÍ ESTÁ EL ARREGLO!)
+                foreach (var detalleDto in ventaDto.Detalles)
+                {
+                    var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
+
+                    // Validaciones de producto y stock
+                    if (producto == null)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest($"El producto con ID {detalleDto.IdProducto} no existe.");
+                    }
+                    if (producto.Stock < detalleDto.Cantidad)
+                    {
+                        await transaction.RollbackAsync();
+                        return BadRequest($"Stock insuficiente para '{producto.NombreProducto}'. Stock: {producto.Stock}, Solicitado: {detalleDto.Cantidad}.");
+                    }
+
+                    // Actualizar Stock
+                    producto.Stock -= detalleDto.Cantidad;
+                    _context.Entry(producto).State = EntityState.Modified;
+
+                    // --- LÓGICA DE DETALLE VENTA (COMPLETA) ---
+                    var detalleVenta = new DetalleVenta
+                    {
+                        IdProducto = detalleDto.IdProducto,
+                        Cantidad = detalleDto.Cantidad,
+                        PrecioUnitario = producto.Precio, // Toma el precio de la BD
+                        Subtotal = producto.Precio * detalleDto.Cantidad // Calcula el subtotal
+                    };
+                    detallesVenta.Add(detalleVenta);
+                    totalVentaCalculado += detalleVenta.Subtotal;
+
+                    // --- LÓGICA DE DETALLE INVENTARIO (COMPLETA) ---
+                    var detalleInventario = new DetalleInventario
+                    {
+                        IdProducto = detalleDto.IdProducto,
+                        Cantidad = -detalleDto.Cantidad, // Venta resta stock
+                        TipoMovimiento = "Venta", // <-- ¡EL CAMPO QUE FALTABA!
+                        Fecha = DateTime.Now
+                        // (Asegúrate de que tu tabla DetalleInventario no tenga otros campos NOT NULL)
+                    };
+                    _context.DetallesInventario.Add(detalleInventario);
+                }
+
+                // 3. Crear Venta
                 var venta = new Venta
                 {
                     FechaVenta = DateTime.Now,
@@ -68,19 +108,19 @@ namespace MiApi.Controllers
                 };
                 _context.Ventas.Add(venta);
 
+                // 4. Guardar Todo
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                 // Mapeo a VentaDto para la respuesta
-                var ventaCreadaDto = await MapVentaToDto(venta.Id); // Usar método auxiliar
-
+                // 5. Devolver Respuesta
+                var ventaCreadaDto = await MapVentaToDto(venta.Id);
                 return CreatedAtAction(nameof(GetVenta), new { id = venta.Id }, ventaCreadaDto);
-
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, "...");
+                // Devuelve el mensaje de error interno para depurar
+                return StatusCode(500, $"Error interno: {ex.Message} --- InnerException: {ex.InnerException?.Message}");
             }
         }
 
@@ -124,12 +164,12 @@ namespace MiApi.Controllers
         // --- Método auxiliar para mapear Venta a VentaDto ---
         private async Task<VentaDto?> MapVentaToDto(int ventaId)
         {
-             var venta = await _context.Ventas
-                .Include(v => v.Cliente)
-                .Include(v => v.Usuario)
-                .Include(v => v.DetallesVenta)
-                    .ThenInclude(d => d.Producto)
-                .FirstOrDefaultAsync(v => v.Id == ventaId);
+            var venta = await _context.Ventas
+               .Include(v => v.Cliente)
+               .Include(v => v.Usuario)
+               .Include(v => v.DetallesVenta)
+                   .ThenInclude(d => d.Producto)
+               .FirstOrDefaultAsync(v => v.Id == ventaId);
 
             if (venta == null) return null;
 

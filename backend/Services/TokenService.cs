@@ -27,10 +27,19 @@ namespace MiApi.Services
 
         public async Task<string> CreateToken(Usuario user)
         {
+
+            // --- INICIO: LÍNEA DE DEPURACIÓN (para la consola del backend) ---
+            Console.WriteLine($"[TokenService] Creando token para User.Id: {user.Id}, UserName: {user.UserName}");
+            // --- FIN: LÍNEA DE DEPURACIÓN ---
+
+
             // 1. Claims: Información que queremos incluir en el token (Id, Nombre de usuario)
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
+
+                
+
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 // Puedes añadir más claims personalizados si necesitas
