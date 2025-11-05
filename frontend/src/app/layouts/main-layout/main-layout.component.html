@@ -18,62 +18,68 @@
         <span matListItemTitle>Punto de Venta</span>
       </a>
 
-      <mat-divider></mat-divider>
+      <!-- --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 5.5) --- -->
+      <!-- Este ng-container envuelve toda la sección de Admin -->
+      <!-- Se mostrará solo si isAdmin$ (del .ts) emite 'true' -->
+      <ng-container *ngIf="isAdmin$ | async">
+        <mat-divider></mat-divider>
 
-      <!-- --- SECCIÓN DE ADMINISTRACIÓN MODIFICADA --- -->
-      <a
-        mat-list-item
-        (click)="toggleMenuAdministracion()"
-        class="menu-toggle-item"
-      >
-        <mat-icon matListItemIcon>shield_person</mat-icon>
-        <span matListItemTitle>Administración</span>
-        <span class="flex-spacer"></span>
-        <mat-icon class="menu-toggle-icon">
-          {{ menuAdministracionAbierto() ? 'expand_less' : 'expand_more' }}
-        </mat-icon>
-      </a>
-
-      <!-- Submenú que se oculta y muestra -->
-      @if (menuAdministracionAbierto()) {
-      <div class="submenu">
+        <!-- --- SECCIÓN DE ADMINISTRACIÓN MODIFICADA --- -->
         <a
           mat-list-item
-          routerLink="/app/admin/productos"
-          routerLinkActive="menu-item-active"
+          (click)="toggleMenuAdministracion()"
+          class="menu-toggle-item"
         >
-          <mat-icon matListItemIcon>inventory_2</mat-icon>
-          <span matListItemTitle>Productos</span>
-        </a>
-        <a
-          mat-list-item
-          routerLink="/app/admin/categorias"
-          routerLinkActive="menu-item-active"
-        >
-          <mat-icon matListItemIcon>category</mat-icon>
-          <span matListItemTitle>Categorías</span>
-        </a>
-        <a
-          mat-list-item
-          routerLink="/app/admin/proveedores"
-          routerLinkActive="menu-item-active"
-        >
-          <mat-icon matListItemIcon>local_shipping</mat-icon>
-          <span matListItemTitle>Proveedores</span>
+          <mat-icon matListItemIcon>shield_person</mat-icon>
+          <span matListItemTitle>Administración</span>
+          <span class="flex-spacer"></span>
+          <mat-icon class="menu-toggle-icon">
+            {{ menuAdministracionAbierto() ? 'expand_less' : 'expand_more' }}
+          </mat-icon>
         </a>
 
-        <!-- === NUEVO ENLACE AÑADIDO AQUÍ === -->
-        <a
-          mat-list-item
-          routerLink="/app/admin/reporte-ventas"
-          routerLinkActive="menu-item-active"
-        >
-          <mat-icon matListItemIcon>assessment</mat-icon>
-          <span matListItemTitle>Reporte de Ventas</span>
-        </a>
-      </div>
-      }
-      <!-- --- FIN DE SECCIÓN DE ADMINISTRACIÓN --- -->
+        <!-- Submenú que se oculta y muestra -->
+        @if (menuAdministracionAbierto()) {
+        <div class="submenu">
+          <a
+            mat-list-item
+            routerLink="/app/admin/productos"
+            routerLinkActive="menu-item-active"
+          >
+            <mat-icon matListItemIcon>inventory_2</mat-icon>
+            <span matListItemTitle>Productos</span>
+          </a>
+          <a
+            mat-list-item
+            routerLink="/app/admin/categorias"
+            routerLinkActive="menu-item-active"
+          >
+            <mat-icon matListItemIcon>category</mat-icon>
+            <span matListItemTitle>Categorías</span>
+          </a>
+          <a
+            mat-list-item
+            routerLink="/app/admin/proveedores"
+            routerLinkActive="menu-item-active"
+          >
+            <mat-icon matListItemIcon>local_shipping</mat-icon>
+            <span matListItemTitle>Proveedores</span>
+          </a>
+
+          <!-- === NUEVO ENLACE AÑADIDO AQUÍ === -->
+          <a
+            mat-list-item
+            routerLink="/app/admin/reporte-ventas"
+            routerLinkActive="menu-item-active"
+          >
+            <mat-icon matListItemIcon>assessment</mat-icon>
+            <span matListItemTitle>Reporte de Ventas</span>
+          </a>
+        </div>
+        }
+        <!-- --- FIN DE SECCIÓN DE ADMINISTRACIÓN --- -->
+      </ng-container>
+      <!-- --- 👆 FIN DE LA MODIFICACIÓN --- -->
     </mat-nav-list>
   </mat-sidenav>
 

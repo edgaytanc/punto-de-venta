@@ -1,6 +1,11 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 
+// --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 5.7) ---
+// 1. Importar el nuevo guardián que creamos
+import { adminGuard } from './core/guards/admin.guard';
+// --- 👆 FIN DE LA MODIFICACIÓN ---
+
 // --- IMPORTAMOS LOS NUEVOS LAYOUTS ---
 import AuthLayoutComponent from './layouts/auth-layout/auth-layout.component';
 import MainLayoutComponent from './layouts/main-layout/main-layout.component';
@@ -38,10 +43,14 @@ export const routes: Routes = [
   {
     path: 'app', // <--- Nueva ruta padre para todo lo protegido
     component: MainLayoutComponent,
-    canActivate: [authGuard], // El guard protege todo este grupo
+    canActivate: [authGuard], // <-- 1. Este guardián (authGuard) verifica que el usuario ESTÉ LOGUEADO
     children: [
       {
         path: 'admin',
+        // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 5.7) ---
+        // 2. Este guardián (adminGuard) verifica que el usuario LOGUEADO SEA ADMIN
+        canActivate: [adminGuard],
+        // --- 👆 FIN DE LA MODIFICACIÓN ---
         loadChildren: () =>
           // Carga la constante 'ADMIN_ROUTES' de admin.routes
           import('./features/admin/admin.routes').then((m) => m.ADMIN_ROUTES),
@@ -79,4 +88,3 @@ export const routes: Routes = [
     redirectTo: '/auth/login',
   },
 ];
-

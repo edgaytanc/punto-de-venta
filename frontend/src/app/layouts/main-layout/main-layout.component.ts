@@ -9,6 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs'; // <-- Asegurarse que Observable esté importado
 
 @Component({
   selector: 'app-main-layout', // <-- CAMBIADO
@@ -27,7 +28,8 @@ import { map } from 'rxjs/operators';
   templateUrl: './main-layout.component.html', // <-- CAMBIADO
   styleUrls: ['./main-layout.component.scss'], // <-- CAMBIADO
 })
-export default class MainLayoutComponent { // <-- CAMBIADO
+export default class MainLayoutComponent {
+  // <-- CAMBIADO
   title = 'Punto de Venta';
   public authService = inject(AuthService);
   private router = inject(Router);
@@ -37,8 +39,20 @@ export default class MainLayoutComponent { // <-- CAMBIADO
 
   // Derivamos isAuthenticated$ a partir de currentUser$
   public isAuthenticated$ = this.authService.currentUser$.pipe(
-    map(user => !!user) // !! convierte el objeto de usuario (o null) en un booleano
+    map((user) => !!user) // !! convierte el objeto de usuario (o null) en un booleano
   );
+
+  // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 5.5) ---
+  /**
+   * Observable que emite true si el usuario actual tiene el rol 'Admin'.
+   */
+  public isAdmin$: Observable<boolean> = this.authService.currentUser$.pipe(
+    map((user) => {
+      // Comprueba si el usuario existe, si tiene roles, y si 'Admin' está en la lista
+      return user?.roles?.includes('Admin') ?? false;
+    })
+  );
+  // --- 👆 FIN DE LA MODIFICACIÓN ---
 
   // Señal para el estado del menú principal (sidenav)
   private menuAbiertoSignal = signal(true); // Inicia abierto

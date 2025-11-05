@@ -55,7 +55,7 @@ namespace MiApi.Controllers
             }
 
             // Por ahora, no asignaremos roles al registrar, podrías añadirlo aquí si quieres
-            // await _userManager.AddToRoleAsync(user, "Cliente");
+            await _userManager.AddToRoleAsync(user, "POS");
 
             return Ok(new UserDto
             {

@@ -3,18 +3,31 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 
-import { AuthResponse } from '../models/token.model';
+// --- (ELIMINADO) No usamos AuthResponse, usamos BackendAuthResponse ---
+// import { AuthResponse } from '../models/token.model';
 import { Login } from '../models/login.model';
 import { Register } from '../models/register.model';
 import { User } from '../models/user.model';
 
-// Interfaz para el contenido decodificado del token
-interface DecodedToken {
-  sub: string;
+// --- 👇 INICIO MODIFICACIÓN Tarea 5.4 ---
+
+// 1. Esta interfaz representa lo que SÍ envía el backend (UserDto.cs)
+interface BackendAuthResponse {
+  id: number;
+  username: string;
   email: string;
-  unique_name: string; // ASP.NET Core usa 'unique_name' para el UserName
-  exp: number;
+  token: string;
 }
+
+// 2. Interfaz para el contenido decodificado del token (CON ROLES)
+interface DecodedToken {
+  sub: string; // ID de usuario
+  email: string;
+  unique_name: string; // UserName
+  role: string | string[]; // <-- TAREA 5.4: Roles (puede ser uno o varios)
+  exp: number; // Expiración
+}
+// --- 👆 FIN MODIFICACIÓN Tarea 5.4 ---
 
 @Injectable({
   providedIn: 'root',
@@ -35,26 +48,44 @@ export class AuthService {
   /**
    * Lógica para Iniciar Sesión (Login)
    */
-  login(credentials: Login): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/login`, credentials).pipe(
+  // --- 👇 INICIO MODIFICACIÓN Tarea 5.4 ---
+  // 3. Cambiamos AuthResponse por BackendAuthResponse
+  login(credentials: Login): Observable<BackendAuthResponse> {
+    return this.http.post<BackendAuthResponse>(`${this.apiBaseUrl}/login`, credentials).pipe(
       tap((response) => {
-        // Al hacer login, usamos los datos frescos del API
-        this.saveAuthData(response.token, response.user);
+        // 4. Decodificamos el token para OBTENER los roles
+        const user = this.decodeTokenAndGetUser(response.token);
+        if (user) {
+          this.saveAuthData(response.token, user);
+        } else {
+          // El token recibido del login es inválido (error de servidor)
+          console.error('Token inválido recibido del servidor durante el login.');
+        }
       })
     );
   }
+  // --- 👆 FIN MODIFICACIÓN Tarea 5.4 ---
 
   /**
    * Lógica para Registrarse
    */
-  register(userInfo: Register): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/register`, userInfo).pipe(
+  // --- 👇 INICIO MODIFICACIÓN Tarea 5.4 ---
+  // 5. Cambiamos AuthResponse por BackendAuthResponse
+  register(userInfo: Register): Observable<BackendAuthResponse> {
+    return this.http.post<BackendAuthResponse>(`${this.apiBaseUrl}/register`, userInfo).pipe(
       tap((response) => {
-        // Al registrarse, usamos los datos frescos del API
-        this.saveAuthData(response.token, response.user);
+        // 6. Decodificamos el token para OBTENER los roles
+        const user = this.decodeTokenAndGetUser(response.token);
+        if (user) {
+          this.saveAuthData(response.token, user);
+        } else {
+          // El token recibido del registro es inválido (error de servidor)
+          console.error('Token inválido recibido del servidor durante el registro.');
+        }
       })
     );
   }
+  // --- 👆 FIN MODIFICACIÓN Tarea 5.4 ---
 
   logout(): void {
     localStorage.removeItem('token');
@@ -73,14 +104,8 @@ export class AuthService {
     if (!token) {
       return false;
     }
-
-    try {
-      const decodedToken: DecodedToken = jwtDecode(token);
-      const isExpired = Date.now() >= decodedToken.exp * 1000;
-      return !isExpired;
-    } catch (error) {
-      return false; // Token inválido
-    }
+    // 7. Usamos el nuevo helper. Devuelve null si el token es inválido o expiró.
+    return this.decodeTokenAndGetUser(token) !== null;
   }
 
   /**
@@ -97,31 +122,56 @@ export class AuthService {
   private loadUserFromToken(): void {
     const token = this.getToken();
     if (token) {
-      try {
-        const decodedToken: DecodedToken = jwtDecode(token);
+      // 8. Usamos el nuevo helper
+      const user = this.decodeTokenAndGetUser(token);
 
-        // Revisa si el token ha expirado
-        const isExpired = Date.now() >= decodedToken.exp * 1000;
-        if (isExpired) {
-          console.warn('Token expirado, limpiando sesión.');
-          this.logout();
-          return;
-        }
-
-        // Si no ha expirado, crea el usuario desde el token
-        const user: User = {
-          id: Number(decodedToken.sub), // 'sub' es el ID del usuario
-          email: decodedToken.email,
-          username: decodedToken.unique_name,
-        };
-
-        // Actualiza el estado de la app
+      if (user) {
+        // Token válido y no expirado, actualiza el estado
         this.currentUserSubject.next(user);
-
-      } catch (error) {
-        console.error('Token inválido, limpiando sesión:', error);
-        this.logout(); // Limpia si el token es basura
+      } else {
+        // Token inválido o expirado
+        console.warn('Token inválido o expirado, limpiando sesión.');
+        this.logout();
       }
     }
   }
+
+  // --- 👇 INICIO MODIFICACIÓN Tarea 5.4 ---
+  /**
+   * 9. NUEVO HELPER: Decodifica el token, valida la expiración y extrae los roles.
+   * Devuelve un objeto User completo o null si el token es inválido/expirado.
+   */
+  private decodeTokenAndGetUser(token: string): User | null {
+    try {
+      const decodedToken: DecodedToken = jwtDecode(token);
+
+      // Revisa si el token ha expirado
+      const isExpired = Date.now() >= decodedToken.exp * 1000;
+      if (isExpired) {
+        return null;
+      }
+
+      // Extrae los roles (manejando si es un string o un array)
+      let roles: string[] = [];
+      if (Array.isArray(decodedToken.role)) {
+        roles = decodedToken.role;
+      } else if (typeof decodedToken.role === 'string') {
+        roles = [decodedToken.role];
+      }
+
+      // Crea el usuario desde el token
+      const user: User = {
+        id: Number(decodedToken.sub), // 'sub' es el ID del usuario
+        email: decodedToken.email,
+        username: decodedToken.unique_name,
+        roles: roles, // <-- TAREA 5.4: Roles asignados
+      };
+
+      return user;
+    } catch (error) {
+      console.error('Token inválido, no se pudo decodificar:', error);
+      return null; // Token inválido
+    }
+  }
+  // --- 👆 FIN MODIFICACIÓN Tarea 5.4 ---
 }
