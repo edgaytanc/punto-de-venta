@@ -1,39 +1,24 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router, UrlTree } from '@angular/router';
+import { CanActivateFn, Router } from '@angular/router';
+// Importamos el servicio completo
 import { AuthService } from '../services/auth.service';
-import { Observable } from 'rxjs';
 
 /**
- * Guardia funcional para proteger rutas.
- *
- * Verifica si el usuario está logueado (tiene un token) usando el AuthService.
- * Si el usuario está logueado, permite el acceso (return true).
- * Si no está logueado, redirige a la página '/login' y bloquea el acceso (return UrlTree).
+ * Guardia de autenticación SINCRÓNICO (corregido).
+ * Este guardián utiliza el método 'isLoggedIn()' del AuthService,
+ * que comprueba el token en localStorage.
  */
-export const authGuard: CanActivateFn = (
-  route,
-  state
-):
-  | boolean
-  | UrlTree
-  | Observable<boolean | UrlTree>
-  | Promise<boolean | UrlTree> => {
-
-  // Inyectar los servicios necesarios dentro del guardián
+export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Comprobar si el usuario está logueado
+  // Usamos el método síncrono del servicio que SÍ proporcionaste
   if (authService.isLoggedIn()) {
-    return true; // El usuario está logueado, permitir acceso
+    // Si el token es válido, permite la navegación
+    return true;
+  } else {
+    // Si no hay token válido, redirige al login
+    router.navigate(['/auth/login']);
+    return false;
   }
-
-  // Si no está logueado, redirigir a la página de login
-  // Usamos createUrlTree para una redirección segura desde un guard
-  console.warn('Acceso denegado: Usuario no autenticado. Redirigiendo a /login...');
-
-  // Creamos un UrlTree para que el router navegue a '/login'
-  const loginUrlTree = router.createUrlTree(['/login']);
-
-  return loginUrlTree;
 };

@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  height: 100%; // Asegura que el layout ocupe toda la altura de la pantalla.
+}
+
+.auth-container {
+  display: flex;
+  align-items: center; // Centra verticalmente el contenido (el <router-outlet>)
+  justify-content: center; // Centra horizontalmente el contenido
+  height: 100%;
+  padding: 1.5rem;
+
+  // --- CAMBIO ESTÉTICO AQUÍ ---
+  // Reemplazamos el color de fondo sólido por un gradiente.
+  // Usamos las variables de tu 'styles.scss' para mantener la consistencia.
+  background-color: var(--color-primary-light); // Un color de fallback por si el gradiente falla
+  background-image: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,     // Empezamos con el azul principal
+    var(--color-primary-dark) 100% // Terminamos en el azul oscuro
+  );
+  // --- FIN DEL CAMBIO ---
+}

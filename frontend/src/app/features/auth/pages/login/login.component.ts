@@ -1,12 +1,20 @@
-import { Component, OnInit, inject } from '@angular/core';
+// Eliminamos 'NgZone' de las importaciones
+import { Component, inject } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Login } from '../../../../core/models/login.model';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -14,65 +22,88 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
   // Inyección de servicios
   private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
+  public authService = inject(AuthService);
   private router = inject(Router);
+  // private zone = inject(NgZone); // <-- Eliminado
 
-  // Propiedades del componente
-  loginForm!: FormGroup;
-  errorMessage: string | null = null;
-  isLoading = false;
+  // Estado
+  public hidePassword = true;
+  public isLoading = false;
+  public loginError: string | null = null;
 
-  ngOnInit(): void {
-    // Inicializamos el formulario reactivo
-    this.loginForm = this.fb.group({
-      username: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
-    });
-  }
+  // Formulario
+  public loginForm: FormGroup = this.fb.group({
+    username: ['', [Validators.required]],
+    password: ['', [Validators.required, Validators.minLength(6)]],
+  });
 
   /**
    * Maneja el envío del formulario de login.
    */
   onSubmit(): void {
-    // Si el formulario no es válido, no hacer nada
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched(); // Marcar campos como tocados para mostrar errores
+    if (this.loginForm.invalid || this.isLoading) {
       return;
     }
 
-    // Mostrar indicador de carga y limpiar errores previos
     this.isLoading = true;
-    this.errorMessage = null;
+    this.loginError = null;
 
-    // Obtener las credenciales del formulario
-    const credentials: Login = this.loginForm.value;
+    const loginData: Login = this.loginForm.value;
 
-    // Llamar al servicio de autenticación
-    this.authService.login(credentials).subscribe({
-      next: (response) => {
-        this.isLoading = false;
-        // Redirigir al dashboard de admin o al POS al iniciar sesión
-        this.router.navigate(['/admin']);
-        console.log('Login exitoso:', response);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.isLoading = false;
-        // Manejo de errores
-        if (err.status === 401 || err.status === 400) {
-          this.errorMessage = 'Email o contraseña incorrectos. Intente de nuevo.';
-        } else {
-          this.errorMessage =
-            'Ocurrió un error inesperado. Por favor, intente más tarde.';
-        }
-        console.error('Error en login:', err);
-      },
-    });
+    this.authService
+      .login(loginData)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          // Ya no necesitamos 'zone.run()'. La navegación directa funcionará
+          // porque el guardián (auth.guard.ts) ahora es síncrono.
+          this.router.navigate(['/app/pos']);
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('ERROR de login. Detalles:', err);
+          if (err.status === 401) {
+            this.loginError = 'Usuario o contraseña incorrectos.';
+          } else if (err.error && typeof err.error === 'string') {
+             this.loginError = err.error;
+          } else {
+            this.loginError = 'Error al conectar con el servidor.';
+          }
+        },
+      });
+  }
+
+  /**
+   * Obtiene el mensaje de error para un campo del formulario.
+   */
+  getErrorMessage(controlName: string): string {
+    const control = this.loginForm.get(controlName);
+    if (control?.hasError('required')) {
+      return 'Este campo es requerido.';
+    }
+    if (control?.hasError('minlength')) {
+      return 'Debe tener al menos 6 caracteres.';
+    }
+    return '';
   }
 }

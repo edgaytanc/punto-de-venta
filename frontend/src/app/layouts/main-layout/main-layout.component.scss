@@ -1,0 +1,126 @@
+/* Contenedor principal de la aplicación */
+.app-container {
+  height: 100vh; // Ocupa el 100% de la altura de la vista
+  width: 100%;
+}
+
+/* Menú lateral (Sidenav) */
+.app-sidenav {
+  width: 260px; // Ancho del menú
+  border-right: 1px solid var(--color-border); // Borde sutil
+  background-color: var(--color-background-light);
+}
+
+/* Cabecera del Sidenav (Logo/Título) */
+.sidenav-header {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 0.5rem;
+
+  .app-title {
+    color: var(--color-primary);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+}
+
+/* Contenido principal (derecha) */
+.app-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%; // Ocupa toda la altura
+  background-color: var(--color-background-main);
+}
+
+/* Barra de herramientas superior */
+.app-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+
+  .username-display {
+    display: inline-block;
+    margin: 0 0.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Espaciador para empujar elementos a la derecha */
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+/* Contenedor del <router-outlet> */
+.main-content {
+  flex-grow: 1; // Crece para ocupar el espacio restante
+  overflow: auto; // Permite scroll si el contenido es muy largo
+}
+
+/* Estilos de los items de la lista de navegación */
+.mat-nav-list .mat-list-item {
+  color: var(--color-text-main);
+  font-weight: 500;
+
+  .mat-icon {
+    color: var(--color-text-light);
+  }
+
+  // Estilo del item activo
+  &.menu-item-active {
+    color: var(--color-primary);
+    background-color: var(--color-primary-light);
+
+    .mat-icon {
+      color: var(--color-primary);
+    }
+  }
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+}
+
+/* Estilo para el submenú */
+.submenu {
+  margin-left: 1.5rem; // Indentación
+
+  .mat-list-item {
+    // Items de submenú más pequeños
+    height: 40px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Estilo del botón desplegable (Administración) */
+.menu-toggle-item {
+  cursor: pointer;
+
+  .menu-toggle-icon {
+    font-size: 1.25rem;
+    height: auto;
+    width: auto;
+    transition: transform 0.2s ease-in-out;
+  }
+
+  .flex-spacer {
+    flex: 1 1 auto;
+  }
+}
+
+/* Estilo de los sub-cabeceras (ej. "General") */
+.mat-mdc-list .mat-mdc-list-item .mat-mdc-list-item-unscoped-content,
+.mat-mdc-list .mat-mdc-subheader {
+  font-weight: 600;
+}
+
+.mat-mdc-subheader {
+  color: var(--color-primary-dark);
+  padding-left: 1.5rem;
+}
+
+.mat-divider {
+  margin: 0.5rem 1rem;
+}
