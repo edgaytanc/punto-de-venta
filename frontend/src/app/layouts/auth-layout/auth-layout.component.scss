@@ -16,8 +16,8 @@
   background-color: var(--color-primary-light); // Un color de fallback por si el gradiente falla
   background-image: linear-gradient(
     135deg,
-    var(--color-primary) 0%,     // Empezamos con el azul principal
-    var(--color-primary-dark) 100% // Terminamos en el azul oscuro
+    #3f51b5 0%,  // Azul estándar (reemplaza a --color-primary)
+    #303f9f 100% // Azul oscuro (reemplaza a --color-primary-dark)
   );
   // --- FIN DEL CAMBIO ---
 }

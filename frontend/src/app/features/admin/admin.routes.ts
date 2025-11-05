@@ -4,8 +4,9 @@ import CategoriaListComponent from './pages/categoria-list/categoria-list.compon
 import ProveedorListComponent from './pages/proveedor-list/proveedor-list.component';
 import ReporteVentasComponent from './pages/reporte-ventas/reporte-ventas.component';
 
-// 1. Importamos el guardián que creamos
-import { authGuard } from '../../core/guards/auth.guard';
+// 1. Ya no necesitamos importar el guardián aquí,
+// porque la ruta padre ('/app') ya nos protege.
+// import { authGuard } from '../../core/guards/auth.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
@@ -16,25 +17,22 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: 'productos',
     component: ProductoListComponent,
-    // 2. Añadimos el guardián
-    canActivate: [authGuard],
+    // 2. Eliminamos el guardián de aquí
   },
   {
     path: 'categorias',
     component: CategoriaListComponent,
-    // 3. Añadimos el guardián
-    canActivate: [authGuard],
+    // 3. Eliminamos el guardián de aquí
   },
   {
     path: 'proveedores',
     component: ProveedorListComponent,
-    // 4. Añadimos el guardián
-    canActivate: [authGuard],
+    // 4. Eliminamos el guardián de aquí
   },
   {
     path: 'reporte-ventas',
     component: ReporteVentasComponent,
-    // 5. Añadimos el guardián
-    canActivate: [authGuard],
+    // 5. Eliminamos el guardián de aquí
   },
 ];
+
