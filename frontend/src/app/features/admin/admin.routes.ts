@@ -34,5 +34,12 @@ export const ADMIN_ROUTES: Routes = [
     component: ReporteVentasComponent,
     // 5. Eliminamos el guardián de aquí
   },
+  // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 6.9) ---
+  {
+    path: 'usuarios',
+    // Usamos loadComponent para lazy loading del componente que creamos
+    loadComponent: () =>
+      import('./pages/user-list/user-list.component'),
+  },
+  // --- 👆 FIN DE LA MODIFICACIÓN ---
 ];
-

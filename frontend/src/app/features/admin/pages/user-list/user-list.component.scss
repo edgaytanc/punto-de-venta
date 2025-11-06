@@ -1,0 +1,88 @@
+/* Estilos para la lista de usuarios */
+
+.page-card {
+  margin: 24px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap; /* Para responsiveness */
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 16px;
+}
+
+.filter-field {
+  flex: 1 1 300px; /* Permite que crezca pero tiene base de 300px */
+}
+
+.spacer {
+  flex: 1 1 auto; /* Empuja el botón de crear a la derecha en pantallas grandes */
+}
+
+/* En pantallas pequeñas, poner el filtro y el botón en líneas separadas */
+@media (max-width: 600px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .filter-field {
+    width: 100%;
+  }
+  .spacer {
+    display: none;
+  }
+}
+
+
+.table-container {
+  overflow-x: auto; /* Para tablas responsivas en móvil */
+}
+
+table {
+  width: 100%;
+}
+
+/* Estilos para los botones de acciones */
+.action-buttons {
+  button {
+    margin-right: 8px;
+  }
+}
+
+/* Estilos para los chips de roles */
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip-admin {
+  background-color: #ffc107 !important; /* Amarillo/Ámbar para Admin */
+  color: #000;
+}
+
+.chip-pos {
+  background-color: #2196f3 !important; /* Azul para POS */
+  color: #fff;
+}
+
+/* Estilos para los chips de estado */
+.chip-activo {
+  background-color: #4caf50 !important; /* Verde para Activo */
+  color: #fff;
+}
+
+.chip-inactivo {
+  background-color: #f44336 !important; /* Rojo para Inactivo */
+  color: #fff;
+}
+
+/* Quitar el fondo de los chips seleccionados por defecto de Material */
+.chip-admin.mat-mdc-chip-selected,
+.chip-pos.mat-mdc-chip-selected,
+.chip-activo.mat-mdc-chip-selected,
+.chip-inactivo.mat-mdc-chip-selected {
+  background-color: inherit !important;
+  color: inherit !important;
+}

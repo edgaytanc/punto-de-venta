@@ -1,0 +1,107 @@
+<!-- Título del Diálogo -->
+<h1 mat-dialog-title>{{ isEditMode ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h1>
+
+<!-- Contenedor de Carga (Spinner) -->
+@if (isLoading) {
+  <div class="loading-shade">
+    <mat-spinner diameter="50"></mat-spinner>
+  </div>
+}
+
+<!-- Contenido del Diálogo (Formulario) -->
+<div mat-dialog-content [formGroup]="form">
+  <p>Por favor, complete los detalles del usuario.</p>
+
+  <!-- Username -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nombre de Usuario</mat-label>
+    <input matInput formControlName="username" placeholder="ej. juan.perez" required>
+    @if (form.get('username')?.hasError('required')) {
+      <mat-error>El nombre de usuario es requerido</mat-error>
+    }
+    @if (form.get('username')?.hasError('minlength')) {
+      <mat-error>Debe tener al menos 3 caracteres</mat-error>
+    }
+    @if (form.get('username')?.hasError('serverError')) {
+      <mat-error>{{ form.get('username')?.getError('serverError') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <!-- Email -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Correo Electrónico</mat-label>
+    <input matInput formControlName="email" type="email" placeholder="ej. juan@correo.com" required>
+     @if (form.get('email')?.hasError('required')) {
+      <mat-error>El correo es requerido</mat-error>
+    }
+     @if (form.get('email')?.hasError('email')) {
+      <mat-error>El formato del correo no es válido</mat-error>
+    }
+     @if (form.get('email')?.hasError('serverError')) {
+      <mat-error>{{ form.get('email')?.getError('serverError') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <!-- Roles -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Roles</mat-label>
+    <mat-select formControlName="roles" multiple required>
+      @for(role of rolesDisponibles; track role) {
+        <mat-option [value]="role">{{ role }}</mat-option>
+      }
+    </mat-select>
+     @if (form.get('roles')?.hasError('required')) {
+      <mat-error>Debe seleccionar al menos un rol</mat-error>
+    }
+     @if (form.get('roles')?.hasError('serverError')) {
+      <mat-error>{{ form.get('roles')?.getError('serverError') }}</mat-error>
+    }
+  </mat-form-field>
+
+  <!-- Campos de Contraseña (Solo en modo Creación) -->
+  @if (!isEditMode) {
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Contraseña</mat-label>
+      <input matInput formControlName="password" type="password" placeholder="Ingrese la contraseña" required>
+      @if (form.get('password')?.hasError('required')) {
+        <mat-error>La contraseña es requerida</mat-error>
+      }
+      @if (form.get('password')?.hasError('minlength')) {
+        <mat-error>La contraseña debe tener al menos 6 caracteres</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Confirmar Contraseña</mat-label>
+      <input matInput formControlName="confirmPassword" type="password" placeholder="Repita la contraseña" required>
+       @if (form.get('confirmPassword')?.hasError('required')) {
+        <mat-error>Debe confirmar la contraseña</mat-error>
+      }
+       @if (form.get('confirmPassword')?.hasError('mismatch')) {
+        <mat-error>Las contraseñas no coinciden</mat-error>
+      }
+    </mat-form-field>
+  }
+
+  <!-- Estado (Solo en modo Edición) -->
+   @if (isEditMode) {
+     <div class="toggle-section">
+      <mat-slide-toggle formControlName="estado" color="primary">
+        Usuario {{ form.get('estado')?.value ? 'Activo' : 'Inactivo' }}
+      </mat-slide-toggle>
+    </div>
+   }
+
+</div>
+
+<!-- Acciones del Diálogo -->
+<div mat-dialog-actions align="end">
+  <button mat-stroked-button (click)="onCancel()" [disabled]="isLoading">Cancelar</button>
+  <button mat-flat-button color="primary" (click)="onSave()" [disabled]="form.invalid || isLoading">
+    @if (isLoading) {
+      <mat-spinner diameter="20"></mat-spinner>
+    } @else {
+      {{ isEditMode ? 'Actualizar' : 'Crear' }}
+    }
+  </button>
+</div>

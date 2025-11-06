@@ -1,0 +1,41 @@
+/* Estilos para el diálogo de usuario */
+
+.full-width {
+  width: 100%;
+}
+
+.toggle-section {
+  padding: 16px 0;
+}
+
+/* Asegura que el contenido del diálogo tenga un ancho mínimo */
+[mat-dialog-content] {
+  width: 400px;
+  position: relative;
+}
+
+/* --- Estilos para Carga (Loading) --- */
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px; /* Coincide con el radio del diálogo */
+}
+
+/* Ajuste para el spinner dentro del botón */
+.mat-mdc-button-persistent-ripple {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+mat-spinner {
+  display: inline-block;
+}
