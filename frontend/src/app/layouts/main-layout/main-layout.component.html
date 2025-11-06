@@ -18,6 +18,21 @@
         <span matListItemTitle>Punto de Venta</span>
       </a>
 
+      <!-- --- 👇 INICIO DE LA MODIFICACIÓN (Agencia Virtual) --- -->
+      <!-- Enlace externo a la SAT (Agencia Virtual) -->
+      <!-- Se usa href y target="_blank" para abrir en pestaña nueva -->
+      <a
+        mat-list-item
+        href="https://farm3.sat.gob.gt/menu/login.jsf"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <!-- Nota: No hay un icono 'A'. Usamos 'account_balance' (banco/gobierno) por ser la SAT -->
+        <mat-icon matListItemIcon>account_balance</mat-icon>
+        <span matListItemTitle>Agencia Virtual</span>
+      </a>
+      <!-- --- 👆 FIN DE LA MODIFICACIÓN --- -->
+
       <!-- --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 5.5) --- -->
       <!-- Este ng-container envuelve toda la sección de Admin -->
       <!-- Se mostrará solo si isAdmin$ (del .ts) emite 'true' -->
