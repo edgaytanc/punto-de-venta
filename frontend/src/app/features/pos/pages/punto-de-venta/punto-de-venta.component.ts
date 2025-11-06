@@ -21,6 +21,11 @@ import { VentaCreate } from '../../../../core/models/venta.model';
 import { DetalleVentaCreate } from '../../../../core/models/detalle-venta.model';
 import { Venta } from '../../../../core/models/venta.model';
 
+// --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 7.4) ---
+// 1. Importar el nuevo servicio de recibos
+import { ReceiptService } from '../../../../core/services/receipt.service';
+// --- 👆 FIN DE LA MODIFICACIÓN ---
+
 // Interfaz interna para manejar los items del carrito
 interface CarritoItem {
   productoId: number;
@@ -55,6 +60,12 @@ export class PuntoDeVentaComponent implements OnInit {
   private productoService = inject(ProductoService);
   private ventaService = inject(VentaService);
   private snackBar = inject(MatSnackBar);
+
+  // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 7.4) ---
+  // 2. Inyectar el servicio de recibos
+  private receiptService = inject(ReceiptService);
+  // --- 👆 FIN DE LA MODIFICACIÓN ---
+
 
   // --- Estado del Componente ---
   public currentUser: User | null = null;
@@ -233,23 +244,19 @@ export class PuntoDeVentaComponent implements OnInit {
     }
 
     // 3. Mapear this.carrito a DetalleVentaCreate[]
-    // Esto transforma la interfaz interna a la que espera el DTO
     const detallesVenta: DetalleVentaCreate[] = this.carrito.map((item) => {
       return {
         IdProducto: item.productoId,
         Cantidad: item.cantidad,
-        // precioUnitario: item.precioUnitario,
       };
     });
 
     // 4. Crear el objeto VentaCreate
     const nuevaVenta: VentaCreate = {
-      // usuarioId: this.currentUser.id,
-      IdCliente: 1, // Dejamos clienteId como nulo por ahora
+      IdCliente: 1, // Dejamos clienteId 1 (Mostrador) por ahora
       Detalles: detallesVenta,
     };
 
-    // Imprime el objeto 'nuevaVenta' en la consola del navegador
     console.log('ENVIANDO AL BACKEND:', nuevaVenta);
 
     // 5. Llamar a this.ventaService.crearVenta(venta)
@@ -258,13 +265,28 @@ export class PuntoDeVentaComponent implements OnInit {
       next: (ventaRegistrada: Venta) => {
         this.isLoading = false;
 
-        // 6. En éxito, limpiar carrito y mostrar SnackBar
+        // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 7.4) ---
+        // 3. Generar el recibo PDF
+        try {
+          this.receiptService.generateVentaReceipt(ventaRegistrada);
+        } catch (pdfError) {
+          console.error("Error al generar el PDF:", pdfError);
+          // Opcional: Notificar si solo el PDF falló
+          this.snackBar.open(
+            'Venta registrada, pero falló la generación del recibo PDF.',
+            'Cerrar',
+            { duration: 5000, panelClass: ['snackbar-error'] } // Asumiendo que tienes 'snackbar-error' en styles.scss
+          );
+        }
+        // --- 👆 FIN DE LA MODIFICACIÓN ---
+
+        // 6. En éxito, limpiar carrito y mostrar SnackBar (Lógica existente)
         this.snackBar.open(
           `Venta #${ventaRegistrada.id} registrada con éxito.`,
           'Cerrar',
           {
             duration: 3000,
-            panelClass: ['snackbar-success'], // (Opcional: añade clase CSS para color verde)
+            panelClass: ['snackbar-success'],
           }
         );
         this.limpiarVenta();
@@ -277,7 +299,7 @@ export class PuntoDeVentaComponent implements OnInit {
           'Cerrar',
           {
             duration: 5000,
-            panelClass: ['snackbar-error'], // (Opcional: añade clase CSS para color rojo)
+            panelClass: ['snackbar-error'],
           }
         );
         console.error('Error al finalizar la venta:', err);

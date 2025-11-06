@@ -34,7 +34,9 @@
     "jwt-decode": "^4.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.15.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2"
   },
   "devDependencies": {
     "@angular/build": "^20.3.0",
