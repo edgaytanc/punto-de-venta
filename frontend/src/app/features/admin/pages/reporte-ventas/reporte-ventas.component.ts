@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
-import { Router } from '@angular/router'; // Router ya no se usa para 'verDetalle'
 import {
   ReactiveFormsModule,
   FormGroup,
@@ -14,13 +13,16 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BehaviorSubject, finalize, tap } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog'; // <-- AÑADIDO: Importar MatDialog
 
 import { Venta } from '../../../../core/models/venta.model';
 import { VentaService } from '../../../../core/services/venta.service';
-// <-- AÑADIDO: Importar el nuevo componente de diálogo
 import VentaDetalleDialogComponent from '../../components/venta-detalle-dialog/venta-detalle-dialog.component';
+
+import { ReceiptService } from '../../../../core/services/receipt.service';
 
 @Component({
   selector: 'app-reporte-ventas',
@@ -38,7 +40,8 @@ import VentaDetalleDialogComponent from '../../components/venta-detalle-dialog/v
     MatInputModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    // El diálogo se importa dinámicamente, no es necesario añadirlo aquí
+    MatSnackBarModule,
+    MatTooltipModule,
   ],
   templateUrl: './reporte-ventas.component.html',
   styleUrls: ['./reporte-ventas.component.scss'],
@@ -47,8 +50,10 @@ import VentaDetalleDialogComponent from '../../components/venta-detalle-dialog/v
 export default class ReporteVentasComponent implements OnInit {
   // Inyección de servicios
   private ventaService = inject(VentaService);
-  private dialog = inject(MatDialog); // <-- AÑADIDO: Inyectar MatDialog
-  // private router = inject(Router); // <-- ELIMINADO: Ya no se usa para el detalle
+  private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar);
+
+  private receiptService = inject(ReceiptService);
 
   // Estado de carga
   public isLoading = new BehaviorSubject<boolean>(true);
@@ -97,7 +102,7 @@ export default class ReporteVentasComponent implements OnInit {
     const { fechaInicio, fechaFin } = this.filtroForm.value;
 
     if (!fechaInicio || !fechaFin) {
-      console.warn('Se requieren ambas fechas para filtrar.');
+      this.snackBar.open('Debe seleccionar una fecha de inicio y fin.', 'Cerrar', { duration: 3000 });
       return;
     }
 
@@ -125,13 +130,9 @@ export default class ReporteVentasComponent implements OnInit {
   }
 
   /**
-   * MODIFICADO:
    * Obtiene el detalle completo de la venta y abre un diálogo.
    */
   verDetalle(idVenta: number): void {
-    // Ya no navegamos
-    // this.router.navigate(['/admin/reporte-detalle', idVenta]);
-
     this.isLoading.next(true); // Usamos el spinner principal
     this.ventaService
       .getVentaById(idVenta)
@@ -150,11 +151,72 @@ export default class ReporteVentasComponent implements OnInit {
   }
 
   /**
+   * Obtiene los datos de una venta y genera un recibo PDF para reimpresión.
+   */
+  onReimprimirRecibo(idVenta: number): void {
+    this.snackBar.open('Generando recibo PDF...', 'Cerrar', { duration: 2000 });
+    this.isLoading.next(true); // Activar spinner global
+
+    this.ventaService.getVentaById(idVenta).pipe(
+      finalize(() => this.isLoading.next(false)) // Desactivar spinner al finalizar
+    ).subscribe({
+      next: (ventaDetallada: Venta) => {
+        try {
+          // Llamar al servicio de recibos con los datos completos
+          this.receiptService.generateVentaReceipt(ventaDetallada);
+        } catch (pdfError) {
+          console.error("Error al generar el PDF:", pdfError);
+          this.handleError(pdfError, 'generar el recibo PDF');
+        }
+      },
+      error: (err) => this.handleError(err, 'cargar la venta para reimprimir')
+    });
+  }
+
+  // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.3) ---
+  /**
+   * Genera un PDF con los datos que se muestran actualmente en la tabla.
+   */
+  onImprimirReporte(): void {
+    // 1. Obtener los datos actuales de la tabla
+    // Usamos .data porque las funciones de filtro/carga actualizan esta propiedad.
+    const datosParaImprimir = this.ventasDataSource.data;
+
+    // 2. Verificar si hay datos
+    if (datosParaImprimir.length === 0) {
+      this.snackBar.open('No hay datos en la tabla para imprimir.', 'Cerrar', {
+        duration: 3000,
+        panelClass: 'snack-warn' // Clase de advertencia
+      });
+      return;
+    }
+
+    // 3. Obtener las fechas del formulario para el subtítulo del PDF
+    const { fechaInicio, fechaFin } = this.filtroForm.value;
+
+    // 4. Llamar al servicio
+    try {
+      this.receiptService.generateVentasReport(datosParaImprimir, fechaInicio, fechaFin);
+      this.snackBar.open('Generando reporte PDF...', 'Cerrar', {
+        duration: 2000,
+        panelClass: 'snack-success'
+      });
+    } catch (pdfError) {
+      console.error("Error al generar el reporte PDF:", pdfError);
+      this.handleError(pdfError, 'generar el reporte PDF');
+    }
+  }
+  // --- 👆 FIN DE LA MODIFICACIÓN ---
+
+
+  /**
    * Manejador centralizado de errores.
    */
   private handleError(error: any, accion: string): void {
     console.error(`Error al ${accion}:`, error);
-    // Aquí podríamos mostrar una notificación al usuario (ej. MatSnackBar)
+    this.snackBar.open(`Error al ${accion}. Intente de nuevo.`, 'Cerrar', {
+      duration: 4000,
+      panelClass: 'snack-error' // Asegúrate de tener esta clase en styles.scss
+    });
   }
 }
-

@@ -28,21 +28,30 @@ namespace MiApi.Controllers
             _userManager = userManager;
         }
 
+        // --- 👇 INICIO DE LA CORRECCIÓN ---
         // POST: api/ventas -> Recibe VentaCreateDto, Devuelve VentaDto
         [HttpPost]
         public async Task<ActionResult<VentaDto>> PostVenta(VentaCreateDto ventaDto)
         {
-            // Usamos 'Sub' que es el que arreglamos
-            // var userIdClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            // 1. Obtener ID y Objeto del Usuario
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (!int.TryParse(userIdClaim, out int usuarioId))
                 return Unauthorized("No se pudo identificar al usuario desde el token.");
+            
+            var usuario = await _userManager.FindByIdAsync(usuarioId.ToString());
+            if (usuario == null)
+            {
+                return Unauthorized("Usuario no encontrado.");
+            }
+
+            // 2. Diccionario para guardar los productos cargados (para el DTO de respuesta)
+            // Esto es clave para la corrección.
+            var productosCargados = new Dictionary<int, Producto>();
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Validar Cliente
+                // 3. Validar Cliente
                 var cliente = await _context.Clientes.FindAsync(ventaDto.IdCliente);
                 if (cliente == null)
                 {
@@ -53,12 +62,11 @@ namespace MiApi.Controllers
                 decimal totalVentaCalculado = 0;
                 var detallesVenta = new List<DetalleVenta>();
 
-                // 2. Procesar Detalles (¡AQUÍ ESTÁ EL ARREGLO!)
+                // 4. Procesar Detalles
                 foreach (var detalleDto in ventaDto.Detalles)
                 {
                     var producto = await _context.Productos.FindAsync(detalleDto.IdProducto);
 
-                    // Validaciones de producto y stock
                     if (producto == null)
                     {
                         await transaction.RollbackAsync();
@@ -70,34 +78,39 @@ namespace MiApi.Controllers
                         return BadRequest($"Stock insuficiente para '{producto.NombreProducto}'. Stock: {producto.Stock}, Solicitado: {detalleDto.Cantidad}.");
                     }
 
+                    // 5. Guardar el producto en el diccionario
+                    if (!productosCargados.ContainsKey(producto.Id))
+                    {
+                        productosCargados.Add(producto.Id, producto);
+                    }
+
                     // Actualizar Stock
                     producto.Stock -= detalleDto.Cantidad;
                     _context.Entry(producto).State = EntityState.Modified;
 
-                    // --- LÓGICA DE DETALLE VENTA (COMPLETA) ---
+                    // Lógica de Detalle Venta
                     var detalleVenta = new DetalleVenta
                     {
                         IdProducto = detalleDto.IdProducto,
                         Cantidad = detalleDto.Cantidad,
-                        PrecioUnitario = producto.Precio, // Toma el precio de la BD
-                        Subtotal = producto.Precio * detalleDto.Cantidad // Calcula el subtotal
+                        PrecioUnitario = producto.Precio, 
+                        Subtotal = producto.Precio * detalleDto.Cantidad 
                     };
                     detallesVenta.Add(detalleVenta);
                     totalVentaCalculado += detalleVenta.Subtotal;
 
-                    // --- LÓGICA DE DETALLE INVENTARIO (COMPLETA) ---
+                    // Lógica de Detalle Inventario
                     var detalleInventario = new DetalleInventario
                     {
                         IdProducto = detalleDto.IdProducto,
-                        Cantidad = -detalleDto.Cantidad, // Venta resta stock
-                        TipoMovimiento = "Venta", // <-- ¡EL CAMPO QUE FALTABA!
+                        Cantidad = -detalleDto.Cantidad, 
+                        TipoMovimiento = "Venta", 
                         Fecha = DateTime.Now
-                        // (Asegúrate de que tu tabla DetalleInventario no tenga otros campos NOT NULL)
                     };
                     _context.DetallesInventario.Add(detalleInventario);
                 }
 
-                // 3. Crear Venta
+                // 6. Crear Venta
                 var venta = new Venta
                 {
                     FechaVenta = DateTime.Now,
@@ -108,21 +121,45 @@ namespace MiApi.Controllers
                 };
                 _context.Ventas.Add(venta);
 
-                // 4. Guardar Todo
+                // 7. Guardar Todo
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                // 5. Devolver Respuesta
-                var ventaCreadaDto = await MapVentaToDto(venta.Id);
+                // 8. Devolver Respuesta (Mapeo Manual)
+                // NO LLAMAMOS a MapVentaToDto(venta.Id) por el bug de caché.
+                // Construimos el DTO manualmente con los objetos que ya tenemos en memoria.
+                var ventaCreadaDto = new VentaDto
+                {
+                    Id = venta.Id,
+                    FechaVenta = venta.FechaVenta,
+                    TotalVenta = venta.TotalVenta,
+                    IdCliente = venta.IdCliente,
+                    NombreCliente = cliente.Nombre, // Usamos el cliente cargado
+                    IdUsuario = usuarioId,
+                    NombreUsuario = usuario.UserName, // Usamos el usuario cargado
+                    Detalles = venta.DetallesVenta.Select(d => new DetalleVentaDto
+                    {
+                        // 'd' es el DetalleVenta que acabamos de guardar
+                        IdProducto = d.IdProducto,
+                        // ¡LA CORRECCIÓN! Usamos el diccionario
+                        NombreProducto = productosCargados[d.IdProducto].NombreProducto, 
+                        Cantidad = d.Cantidad,
+                        PrecioUnitario = d.PrecioUnitario,
+                        Subtotal = d.Subtotal
+                    }).ToList()
+                };
+                
+                // 9. Devolver el DTO con los nombres de producto
                 return CreatedAtAction(nameof(GetVenta), new { id = venta.Id }, ventaCreadaDto);
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                // Devuelve el mensaje de error interno para depurar
                 return StatusCode(500, $"Error interno: {ex.Message} --- InnerException: {ex.InnerException?.Message}");
             }
         }
+        // --- 👆 FIN DE LA CORRECCIÓN ---
+
 
         // GET: api/ventas -> Devuelve Lista de VentaDto (simplificado)
         [HttpGet]
@@ -162,6 +199,7 @@ namespace MiApi.Controllers
         }
 
         // --- Método auxiliar para mapear Venta a VentaDto ---
+        // Este método está 100% correcto y es usado por GetVenta
         private async Task<VentaDto?> MapVentaToDto(int ventaId)
         {
             var venta = await _context.Ventas
@@ -269,6 +307,4 @@ namespace MiApi.Controllers
 
         // --- FIN DE LOS MÉTODOS A PEGAR ---
     }
-
-
 }

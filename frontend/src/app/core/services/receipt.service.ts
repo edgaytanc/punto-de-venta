@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
+// --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.1) ---
+import { DatePipe } from '@angular/common';
+// --- 👆 FIN DE LA MODIFICACIÓN ---
 import { AuthService } from './auth.service';
 
-// --- 👇 CORRECCIÓN 1: Importar 'Venta' (en lugar de VentaDto) y 'DetalleVenta' ---
 import { Venta } from '../models/venta.model';
 import { DetalleVenta } from '../models/detalle-venta.model';
 
@@ -21,6 +23,10 @@ import 'jspdf-autotable';
 export class ReceiptService {
 
   private authService = inject(AuthService);
+  // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.1) ---
+  private datePipe = inject(DatePipe); // Inyectar DatePipe
+  // --- 👆 FIN DE LA MODIFICACIÓN ---
+
   private currentUserName: string = 'N/A';
 
   constructor() {
@@ -35,7 +41,6 @@ export class ReceiptService {
    * Genera un recibo de venta en PDF y lo descarga en el navegador.
    * @param venta El objeto Venta que viene del backend.
    */
-  // --- 👇 CORRECCIÓN 1: Cambiar VentaDto por Venta ---
   public generateVentaReceipt(venta: Venta): void {
 
     // 1. Inicializar el documento
@@ -45,10 +50,8 @@ export class ReceiptService {
     const cajero = this.currentUserName;
 
     const fecha = new Date(venta.fechaVenta);
-    const fechaFormateada = fecha.toLocaleDateString("es-GT", {
-        day: '2-digit', month: '2-digit', year: 'numeric',
-        hour: '2-digit', minute: '2-digit', hour12: true
-    });
+    // Usamos el DatePipe inyectado (aunque toLocaleDateString también funciona)
+    const fechaFormateada = this.datePipe.transform(fecha, 'dd/MM/yyyy h:mm a', 'es-GT');
 
     // 3. Diseñar el PDF
 
@@ -68,7 +71,7 @@ export class ReceiptService {
     doc.text(`${venta.id}`, 50, startYInfo);
 
     doc.text(`Fecha:`, 20, startYInfo + 7);
-    doc.text(fechaFormateada, 50, startYInfo + 7);
+    doc.text(fechaFormateada ?? '', 50, startYInfo + 7);
 
     doc.text(`Cajero:`, 20, startYInfo + 14);
     doc.text(cajero, 50, startYInfo + 14);
@@ -78,12 +81,11 @@ export class ReceiptService {
     // 4. Formatear los datos para autoTable
     const tableHeaders = ["Cantidad", "Producto", "Precio Unitario", "Subtotal"];
 
-    // --- 👇 CORRECCIÓN 2: Tipar 'detalle' y usar 'venta.detalles' (manejando nulos) ---
-   const tableData = (venta.detalles ?? []).map((detalle: DetalleVenta) => [
+    const tableData = (venta.detalles ?? []).map((detalle: DetalleVenta) => [
       detalle.cantidad,
       detalle.productoNombre,
-      `Q ${detalle.precioUnitario.toFixed(2)}`, // Corregido: precio -> precioUnitario
-      `Q ${detalle.subtotal.toFixed(2)}`        // Corregido: cálculo -> subtotal (del DTO)
+      `Q ${detalle.precioUnitario.toFixed(2)}`,
+      `Q ${detalle.subtotal.toFixed(2)}`
     ]);
 
     // 5. Llamar a autoTable
@@ -113,7 +115,6 @@ export class ReceiptService {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(16);
 
-        // --- 👇 CORRECCIÓN 3: Usar 'venta.totalVenta' en lugar de 'venta.total' ---
         doc.text(`Total: Q ${venta.totalVenta.toFixed(2)}`, 190, totalY, { align: 'right' });
 
 
@@ -130,4 +131,92 @@ export class ReceiptService {
     // 8. Guardar el archivo PDF
     doc.save(`recibo-venta-${venta.id}.pdf`);
   }
+
+  // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.1) ---
+
+  /**
+   * Genera un reporte de ventas en PDF basado en una lista de ventas.
+   * @param ventas Lista de ventas (filtrada o completa)
+   * @param fechaInicio Fecha de inicio del filtro (opcional)
+   * @param fechaFin Fecha de fin del filtro (opcional)
+   */
+  public generateVentasReport(
+    ventas: Venta[],
+    fechaInicio?: Date | null,
+    fechaFin?: Date | null
+  ): void {
+
+    // 1. Inicializar el documento
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // 2. Título y Subtítulo
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('Reporte de Ventas', 105, 20, { align: 'center' });
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+
+    let subtitulo: string;
+    if (fechaInicio && fechaFin) {
+      const inicio = this.datePipe.transform(fechaInicio, 'dd/MM/yyyy');
+      const fin = this.datePipe.transform(fechaFin, 'dd/MM/yyyy');
+      subtitulo = `Filtrado desde: ${inicio} - Hasta: ${fin}`;
+    } else {
+      subtitulo = 'Mostrando todos los registros';
+    }
+    doc.text(subtitulo, 105, 28, { align: 'center' });
+
+    // 3. Definir Cabeceras (coinciden con la UI, excepto 'acciones')
+    const tableHeaders = ["ID", "Fecha", "Cliente", "Cajero", "Total"];
+
+    // 4. Mapear Datos y Calcular Gran Total
+    let granTotal = 0;
+    const tableData = ventas.map(venta => {
+      granTotal += venta.totalVenta; // Acumular el total
+
+      return [
+        venta.id,
+        this.datePipe.transform(venta.fechaVenta, 'dd/MM/yyyy h:mm a'), // Formatear fecha
+        venta.nombreCliente || 'Mostrador',
+        venta.nombreUsuario || 'N/A',
+        `Q ${venta.totalVenta.toFixed(2)}` // Formatear moneda
+      ];
+    });
+
+    // 5. Llamar a autoTable
+    autoTable(doc, {
+      startY: 40, // Empezar después del subtítulo
+      head: [tableHeaders],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [38, 83, 131], textColor: 255 },
+      styles: { font: 'helvetica', fontSize: 10 },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 15 }, // ID
+        4: { halign: 'right' } // Total
+      },
+      didDrawPage: (data) => {
+        // --- 6. Añadir Gran Total ---
+        const tableEndY = data.cursor?.y ?? 0;
+        const totalY = tableEndY + 12;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(14);
+        doc.text(`Gran Total: Q ${granTotal.toFixed(2)}`, 190, totalY, { align: 'right' });
+
+        // --- Pie de Página (en cada página) ---
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.text(`Reporte generado el: ${new Date().toLocaleDateString("es-GT")}`, 20, pageHeight - 10);
+        doc.text(`Página ${data.pageNumber}`, 190, pageHeight - 10, { align: 'right' });
+      }
+    });
+
+    // 7. Guardar el archivo PDF
+    doc.save('reporte-ventas.pdf');
+  }
+  // --- 👆 FIN DE LA MODIFICACIÓN ---
+
 }

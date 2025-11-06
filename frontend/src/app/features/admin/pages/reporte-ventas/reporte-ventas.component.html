@@ -1,99 +1,129 @@
-<div class="admin-container">
-  <h1>Reporte General de Ventas</h1>
+<div class="report-container">
+  <h1>Reporte de Ventas</h1>
+  <p>Filtre las ventas por un rango de fechas.</p>
 
-  <form [formGroup]="filtroForm" (ngSubmit)="aplicarFiltros()" class="filtros-container mat-elevation-z2">
-    <mat-form-field appearance="outline">
+  <!-- Formulario de Filtros -->
+  <form [formGroup]="filtroForm" (ngSubmit)="aplicarFiltros()" class="filter-form">
+    <mat-form-field appearance="outline" class="date-field">
       <mat-label>Fecha de Inicio</mat-label>
-      <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio" title="Fecha de inicio" placeholder="Seleccione fecha de inicio">
-      <mat-datepicker-toggle matIconSuffix [for]="pickerInicio"></mat-datepicker-toggle>
+      <input matInput [matDatepicker]="pickerInicio" formControlName="fechaInicio" placeholder="dd/MM/yyyy" title="Fecha de Inicio" aria-label="Fecha de Inicio">
+      <mat-datepicker-toggle matSuffix [for]="pickerInicio"></mat-datepicker-toggle>
       <mat-datepicker #pickerInicio></mat-datepicker>
     </mat-form-field>
 
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="date-field">
       <mat-label>Fecha de Fin</mat-label>
-      <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin" title="Fecha de fin" placeholder="Seleccione fecha de fin">
-      <mat-datepicker-toggle matIconSuffix [for]="pickerFin"></mat-datepicker-toggle>
+      <input matInput [matDatepicker]="pickerFin" formControlName="fechaFin" placeholder="dd/MM/yyyy" title="Fecha de Fin" aria-label="Fecha de Fin">
+      <mat-datepicker-toggle matSuffix [for]="pickerFin"></mat-datepicker-toggle>
       <mat-datepicker #pickerFin></mat-datepicker>
     </mat-form-field>
 
-    <div classs="filtros-acciones">
-      <button mat-flat-button color="primary" type="submit" [disabled]="filtroForm.invalid">
-        <mat-icon>filter_list</mat-icon>
-        Aplicar Filtro
-      </button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="filtroForm.invalid">
+      <mat-icon>filter_alt</mat-icon>
+      Aplicar Filtro
+    </button>
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()">
+      <mat-icon>clear</mat-icon>
+      Limpiar
+    </button>
 
-      <button mat-button type="button" (click)="limpiarFiltros()">
-        <mat-icon>clear</mat-icon>
-        Limpiar
-      </button>
-    </div>
+    <!-- --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.2) --- -->
+
+    <!-- Este espaciador empuja el botón de imprimir a la derecha -->
+    <span class="filter-spacer"></span>
+
+    <button
+      mat-stroked-button
+      color="accent"
+      type="button"
+      (click)="onImprimirReporte()"
+      [disabled]="ventasDataSource.data.length === 0"
+      matTooltip="Imprimir reporte PDF de los datos actuales de la tabla">
+      <mat-icon>picture_as_pdf</mat-icon>
+      Imprimir Reporte
+    </button>
+
+    <!-- --- 👆 FIN DE LA MODIFICACIÓN --- -->
   </form>
 
+  <!-- Spinner de Carga -->
   @if (isLoading | async) {
-  <div class="loading-shade">
-    <mat-spinner diameter="50"></mat-spinner>
-    <p>Cargando reportes...</p>
-  </div>
+    <div class="loading-spinner">
+      <mat-progress-spinner mode="indeterminate" diameter="50"></mat-progress-spinner>
+      <p>Cargando ventas...</p>
+    </div>
   }
 
+  <!-- Contenedor de la Tabla (se oculta durante la carga) -->
   @if (!(isLoading | async)) {
-  <div class="table-container mat-elevation-z8">
-    <table mat-table [dataSource]="ventasDataSource">
+    <div class="mat-elevation-z8 table-container">
+      <table mat-table [dataSource]="ventasDataSource" class="sales-table">
 
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef> Folio </th>
-        <td mat-cell *matCellDef="let venta"> {{venta.id}} </td>
-      </ng-container>
+        <!-- Columna ID -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef> ID </th>
+          <td mat-cell *matCellDef="let element"> {{element.id}} </td>
+        </ng-container>
 
-      <ng-container matColumnDef="fechaVenta">
-        <th mat-header-cell *matHeaderCellDef> Fecha y Hora </th>
-        <td mat-cell *matCellDef="let venta">
-          {{venta.fechaVenta | date: 'dd/MM/yyyy HH:mm:ss'}}
-        </td>
-      </ng-container>
+        <!-- Columna Fecha -->
+        <ng-container matColumnDef="fechaVenta">
+          <th mat-header-cell *matHeaderCellDef> Fecha de Venta </th>
+          <td mat-cell *matCellDef="let element"> {{element.fechaVenta | date:'dd/MM/yyyy h:mm a'}} </td>
+        </ng-container>
 
-      <ng-container matColumnDef="nombreCliente">
-        <th mat-header-cell *matHeaderCellDef> Cliente </th>
-        <td mat-cell *matCellDef="let venta">
-          {{venta.nombreCliente || 'Consumidor Final'}}
-        </td>
-      </ng-container>
+        <!-- Columna Cliente -->
+        <ng-container matColumnDef="nombreCliente">
+          <th mat-header-cell *matHeaderCellDef> Cliente </th>
+          <td mat-cell *matCellDef="let element"> {{element.nombreCliente || 'Mostrador'}} </td>
+        </ng-container>
 
-      <ng-container matColumnDef="nombreUsuario">
-        <th mat-header-cell *matHeaderCellDef> Vendedor </th>
-        <td mat-cell *matCellDef="let venta">
-          {{venta.nombreUsuario || 'N/A'}}
-        </td>
-      </ng-container>
+        <!-- Columna Usuario/Cajero -->
+        <ng-container matColumnDef="nombreUsuario">
+          <th mat-header-cell *matHeaderCellDef> Cajero </th>
+          <td mat-cell *matCellDef="let element"> {{element.nombreUsuario || 'N/A'}} </td>
+        </ng-container>
 
-      <ng-container matColumnDef="totalVenta">
-        <th mat-header-cell *matHeaderCellDef class="cell-right"> Total </th>
-        <td mat-cell *matCellDef="let venta" class="cell-right">
-          {{venta.totalVenta | currency: 'Q '}}
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="acciones">
-        <th mat-header-cell *matHeaderCellDef class="col-acciones"> Detalle </th>
-        <td mat-cell *matCellDef="let venta" class="col-acciones">
-          <button mat-icon-button color="primary" (click)="verDetalle(venta.id)" matTooltip="Ver detalle de la venta">
-            <mat-icon>visibility</mat-icon>
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-      @if (ventasDataSource.data.length === 0) {
-        <tr class="mat-row no-data-row">
-          <td class="mat-cell" [colSpan]="displayedColumns.length">
-            No se encontraron ventas que coincidan con los filtros.
+        <!-- Columna Total -->
+        <ng-container matColumnDef="totalVenta">
+          <th mat-header-cell *matHeaderCellDef class="right-align"> Total </th>
+          <td mat-cell *matCellDef="let element" class="right-align total-cell">
+            {{element.totalVenta | currency:'Q '}}
           </td>
-        </tr>
-      }
+        </ng-container>
 
-    </table>
-  </div>
+        <!-- Columna Acciones -->
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef> Acciones </th>
+          <td mat-cell *matCellDef="let element" class="action-buttons">
+            <!-- Botón Ver Detalle (Existente) -->
+            <button mat-icon-button color="primary" matTooltip="Ver detalle de la venta" (click)="verDetalle(element.id)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+
+            <!-- Botón Reimprimir Recibo (Tarea 7.5) -->
+            <button mat-icon-button color="accent" matTooltip="Reimprimir Recibo (PDF)" (click)="onReimprimirRecibo(element.id)">
+              <mat-icon>print</mat-icon>
+            </button>
+
+          </td>
+        </ng-container>
+
+        <!-- Definición de filas -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <!-- Fila de 'No hay datos' -->
+        @if (ventasDataSource.data.length === 0) {
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="text-align: center; padding: 20px;">
+              No se encontraron ventas para el rango seleccionado.
+            </td>
+          </tr>
+        }
+      </table>
+
+      <!-- (Paginador - si se añade en el futuro) -->
+      <!-- <mat-paginator [pageSizeOptions]="[10, 25, 100]"></mat-paginator> -->
+    </div>
   }
 </div>

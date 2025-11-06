@@ -7,6 +7,10 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { tokenInterceptor } from './core/interceptors/token.interceptor';
 
+// --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.1) ---
+import { DatePipe } from '@angular/common';
+// --- 👆 FIN DE LA MODIFICACIÓN ---
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -16,6 +20,10 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(), // Esto lo añadió Angular Material
 
     // 2. Modifica esta línea:
-    provideHttpClient(withInterceptors([tokenInterceptor]))
+    provideHttpClient(withInterceptors([tokenInterceptor])),
+    // --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 8.1) ---
+    // Añadimos DatePipe a los providers de la aplicación
+    DatePipe,
+    // --- 👆 FIN DE LA MODIFICACIÓN ---
   ]
 };
