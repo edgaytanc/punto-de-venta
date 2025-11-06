@@ -83,7 +83,7 @@ export class ReceiptService {
 
     const tableData = (venta.detalles ?? []).map((detalle: DetalleVenta) => [
       detalle.cantidad,
-      detalle.productoNombre,
+      detalle.nombreProducto,
       `Q ${detalle.precioUnitario.toFixed(2)}`,
       `Q ${detalle.subtotal.toFixed(2)}`
     ]);

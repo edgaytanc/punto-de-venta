@@ -14,7 +14,7 @@ export interface DetalleVentaCreate {
 export interface DetalleVenta {
   id: number;
   productoId: number;
-  productoNombre: string;
+  nombreProducto: string;
   cantidad: number;
   precioUnitario: number;
   subtotal: number;
