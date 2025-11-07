@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MiApi.Models; // 1. Importamos Usuario y Rol
+using Microsoft.Extensions.Logging;
 
 namespace MiApi.Data
 {
@@ -15,6 +16,9 @@ namespace MiApi.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<Rol>>(); 
             var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
+            // --- 👇 AÑADE ESTA LÍNEA 👇 ---
+            var context = serviceProvider.GetRequiredService<ApplicationDbContext>(); 
+            // --- 👆 FIN DE LÍNEA A AÑADIR 👆 ---
             string[] roleNames = { "Admin", "User", "POS" };
             
             foreach (var roleName in roleNames)
@@ -50,9 +54,9 @@ namespace MiApi.Data
                     Email = adminEmail,
                     EmailConfirmed = true,
                     // --- CAMBIO 3: Línea 'FullName' eliminada ---
-                    
+
                     // --- CAMBIO 4: Añadimos 'Estado' (de tu modelo Usuario.cs) ---
-                    Estado = true 
+                    Estado = true
                 };
 
                 var result = await userManager.CreateAsync(newAdminUser, adminPassword);
@@ -74,6 +78,40 @@ namespace MiApi.Data
             {
                 logger.LogInformation($"Usuario admin '{adminEmail}' ya existe.");
             }
+            
+            // --- 👇 INICIO DEL CÓDIGO NUEVO PARA EL CLIENTE 👇 ---
+        
+        // 3. Seeding del Cliente por Defecto
+        try
+        {
+            // Verificamos si ya existe algún cliente en la BD
+            if (!context.Clientes.Any())
+            {
+                // Si no hay ninguno, creamos el "Consumidor Final"
+                var defaultClient = new Cliente
+                {
+                    Nombre = "Consumidor Final",
+                    Direccion = "Ciudad",
+                    Telefono = "N/A",
+                    Correo = "consumidor@final.com"
+                    // Las fechas de creación/modificación se manejan automáticamente
+                };
+
+                await context.Clientes.AddAsync(defaultClient);
+                await context.SaveChangesAsync(); // Guardamos los cambios en la BD
+                
+                logger.LogInformation("Cliente por defecto 'Consumidor Final' creado con Id=1.");
+            }
+            else
+            {
+                logger.LogInformation("La tabla de Clientes ya tiene datos. No se crea cliente default.");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Ocurrió un error al intentar crear el cliente por defecto.");
+        }
+        // --- 👆 FIN DEL CÓDIGO NUEVO PARA EL CLIENTE 👆 ---
         }
     }
 }
