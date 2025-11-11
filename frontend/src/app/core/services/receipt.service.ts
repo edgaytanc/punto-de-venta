@@ -58,7 +58,7 @@ export class ReceiptService {
     // --- Encabezado ---
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
-    doc.text('Librería MiPOS', 105, 20, { align: 'center' });
+    doc.text('Comercial Abi', 105, 20, { align: 'center' });
 
     doc.setFontSize(14);
     doc.text('Recibo de Venta', 105, 28, { align: 'center' });
