@@ -1,7 +1,10 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+
+// --- 👇 INICIO DE LA MODIFICACIÓN (Tarea 5.7) ---
+// 1. Importar el nuevo guardián que creamos
 import { adminGuard } from './core/guards/admin.guard';
-import { productGuard } from './core/guards/product.guard';
+// --- 👆 FIN DE LA MODIFICACIÓN ---
 
 // --- IMPORTAMOS LOS NUEVOS LAYOUTS ---
 import AuthLayoutComponent from './layouts/auth-layout/auth-layout.component';
@@ -59,12 +62,6 @@ export const routes: Routes = [
           import(
             './features/pos/pages/punto-de-venta/punto-de-venta.component'
           ).then((m) => m.PuntoDeVentaComponent),
-      },
-      {
-        path: 'productos',
-        canActivate: [productGuard],
-        loadComponent: () =>
-          import('./features/admin/pages/producto-list/producto-list.component'),
       },
       // Redirección por defecto DENTRO de la app
       {

@@ -52,16 +52,6 @@ export default class MainLayoutComponent {
       return user?.roles?.includes('Admin') ?? false;
     })
   );
-
-  /**
-   * Observable que emite true si el usuario puede ver productos (Admin, POS o User).
-   */
-  public canViewProducts$: Observable<boolean> = this.authService.currentUser$.pipe(
-    map((user) => {
-      const allowedRoles = ['Admin', 'POS', 'User'];
-      return user?.roles?.some(role => allowedRoles.includes(role)) ?? false;
-    })
-  );
   // --- 👆 FIN DE LA MODIFICACIÓN ---
 
   // Señal para el estado del menú principal (sidenav)

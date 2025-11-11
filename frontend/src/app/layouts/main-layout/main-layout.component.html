@@ -3,7 +3,7 @@
   <mat-sidenav #sidenav mode="side" [opened]="menuAbierto()" class="app-sidenav">
     <!-- Logo o Título -->
     <div class="sidenav-header">
-      <h2 class="app-title">Comercial Abi</h2>
+      <h2 class="app-title">MiPOS</h2>
     </div>
 
     <!-- Lista de Navegación -->
@@ -17,18 +17,6 @@
         <mat-icon matListItemIcon>point_of_sale</mat-icon>
         <span matListItemTitle>Punto de Venta</span>
       </a>
-
-      <!-- Nueva sección de Productos para usuarios POS y User (NO Admin) -->
-      <ng-container *ngIf="(canViewProducts$ | async) && !(isAdmin$ | async)">
-        <a
-          mat-list-item
-          routerLink="/app/productos"
-          routerLinkActive="menu-item-active"
-        >
-          <mat-icon matListItemIcon>inventory_2</mat-icon>
-          <span matListItemTitle>Productos</span>
-        </a>
-      </ng-container>
 
       <!-- --- 👇 INICIO DE LA MODIFICACIÓN (Agencia Virtual) --- -->
       <!-- Enlace externo a la SAT (Agencia Virtual) -->
