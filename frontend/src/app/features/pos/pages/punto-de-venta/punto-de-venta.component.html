@@ -70,11 +70,12 @@
         <mat-card-title>Búsqueda de Productos</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <!-- 1. Quitamos (ngSubmit) de la etiqueta <form> -->
-        <form>
+        <!-- Formulario con soporte para Enter -->
+        <form (ngSubmit)="buscarProducto($event)" (submit)="$event.preventDefault()">
           <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Buscar por ID o Código</mat-label>
-            <input matInput type="text" [formControl]="searchControl" placeholder="12345">
+            <mat-label>Buscar por ID, Código o Nombre</mat-label>
+            <input matInput type="text" [formControl]="searchControl" placeholder="12345 o Libro de Historia"
+              (keydown.enter)="buscarProducto($event)">
             <button mat-icon-button matSuffix type="button" (click)="buscarProducto()"
               [disabled]="!searchControl.value || isLoading">
               <mat-icon>search</mat-icon>

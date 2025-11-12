@@ -89,31 +89,84 @@ export class PuntoDeVentaComponent implements OnInit {
   }
 
   /**
-   * Tarea 2.4: Busca un producto
+   * Tarea 2.4: Busca un producto por ID o por nombre
    */
-  buscarProducto(): void {
-    const id = this.searchControl.value;
-    if (!id) return;
+  buscarProducto(event?: Event): void {
+    // Prevenir comportamiento por defecto del formulario
+    if (event) {
+      event.preventDefault();
+    }
+    
+    const busqueda = this.searchControl.value?.trim();
+    if (!busqueda) return;
+
+    console.log('Buscando producto:', busqueda); // Debug log
 
     this.isLoading = true;
     this.productoEncontrado = null;
     this.productoNoEncontrado = false;
 
-    this.productoService.getProducto(Number(id)).subscribe({
-      next: (producto: Producto) => {
-        this.productoEncontrado = producto;
-        this.isLoading = false;
-        this.searchControl.setValue('');
-      },
-      error: (err: HttpErrorResponse) => {
-        this.productoNoEncontrado = true;
-        this.isLoading = false;
-        this.snackBar.open(`Producto con ID "${id}" no encontrado.`, 'Cerrar', {
-          duration: 3000,
-        });
-        console.error('Error al buscar producto:', err);
-      },
+    // Verificar si es un número (ID) o texto (nombre)
+    const esNumero = !isNaN(Number(busqueda)) && Number(busqueda) > 0;
+
+    console.log('Es número:', esNumero); // Debug log
+
+    if (esNumero) {
+      // Búsqueda por ID (como estaba originalmente)
+      this.productoService.getProducto(Number(busqueda)).subscribe({
+        next: (producto: Producto) => {
+          console.log('Producto encontrado por ID:', producto); // Debug log
+          this.productoEncontrado = producto;
+          this.isLoading = false;
+          this.searchControl.setValue('');
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Error búsqueda por ID:', err); // Debug log
+          this.manejarErrorBusqueda(busqueda, err);
+        }
+      });
+    } else {
+      // Búsqueda por nombre (NUEVO)
+      console.log('Buscando por nombre...'); // Debug log
+      this.productoService.searchProductosByName(busqueda).subscribe({
+        next: (productos: Producto[]) => {
+          console.log('Productos encontrados por nombre:', productos); // Debug log
+          if (productos.length > 0) {
+            this.productoEncontrado = productos[0]; // Tomar el primer resultado
+            this.isLoading = false;
+            this.searchControl.setValue('');
+            
+            if (productos.length > 1) {
+              this.snackBar.open(`Se encontraron ${productos.length} productos. Mostrando el primero.`, 'Cerrar', {
+                duration: 3000,
+              });
+            }
+          } else {
+            this.productoNoEncontrado = true;
+            this.isLoading = false;
+            this.snackBar.open(`No se encontraron productos con "${busqueda}".`, 'Cerrar', {
+              duration: 3000,
+            });
+          }
+        },
+        error: (err: HttpErrorResponse) => {
+          console.error('Error búsqueda por nombre:', err); // Debug log
+          this.manejarErrorBusqueda(busqueda, err);
+        }
+      });
+    }
+  }
+
+  /**
+   * Método auxiliar para manejar errores de búsqueda
+   */
+  private manejarErrorBusqueda(termino: string, err: HttpErrorResponse): void {
+    this.productoNoEncontrado = true;
+    this.isLoading = false;
+    this.snackBar.open(`Error al buscar "${termino}". Inténtalo de nuevo.`, 'Cerrar', {
+      duration: 3000,
     });
+    console.error('Error al buscar producto:', err);
   }
 
   /**

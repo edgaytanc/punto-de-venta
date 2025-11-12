@@ -22,6 +22,25 @@ table {
   flex: 1 1 auto;
 }
 
+/* Contenedor del campo de búsqueda */
+.search-container {
+  display: flex;
+  justify-content: flex-start; /* Cambio de center a flex-start para alinearlo a la izquierda */
+  margin-bottom: 20px;
+  padding: 0 16px;
+}
+
+/* Campo de búsqueda */
+.search-field {
+  width: 100%;
+  max-width: 400px;
+
+  /* Estilo para el ícono de búsqueda */
+  .mat-icon {
+    color: #0CB7F2;
+  }
+}
+
 /* Asegura que el paginador se vea bien */
 .mat-mdc-paginator {
   border-top: 1px solid rgba(0, 0, 0, 0.12);

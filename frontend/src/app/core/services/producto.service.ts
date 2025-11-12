@@ -63,4 +63,12 @@ export class ProductoService {
   deleteProducto(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  /**
+   * Busca productos por nombre usando el parámetro searchTerm
+   * Corresponde a: GET /api/Productos?searchTerm={nombre}
+   */
+  searchProductosByName(searchTerm: string): Observable<Producto[]> {
+    return this.http.get<Producto[]>(`${this.apiUrl}?searchTerm=${encodeURIComponent(searchTerm)}`);
+  }
 }

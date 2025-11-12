@@ -1,7 +1,9 @@
 // ... (imports sin cambios) ...
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, inject } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ProductoService } from '../../../../core/services/producto.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { Producto } from '../../../../core/models/producto.model';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -12,8 +14,12 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { ProductoDialogComponent } from '../../components/producto-dialog/producto-dialog.component';
 import { ConfirmDialogComponent } from '../../../../core/components/confirm-dialog/confirm-dialog.component';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-producto-list',
@@ -21,6 +27,7 @@ import { ConfirmDialogComponent } from '../../../../core/components/confirm-dial
   imports: [
     CommonModule,
     CurrencyPipe,
+    ReactiveFormsModule,
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
@@ -30,11 +37,22 @@ import { ConfirmDialogComponent } from '../../../../core/components/confirm-dial
     MatTooltipModule,
     MatDialogModule,
     MatSnackBarModule,
+    MatFormFieldModule,
+    MatInputModule,
   ],
   templateUrl: './producto-list.component.html',
   styleUrl: './producto-list.component.scss',
 })
 export default class ProductoListComponent implements OnInit, AfterViewInit {
+
+  // Observable para verificar si el usuario es admin
+  private authService = inject(AuthService);
+  public isAdmin$: Observable<boolean> = this.authService.currentUser$.pipe(
+    map(user => user?.roles?.includes('Admin') ?? false)
+  );
+
+  // FormControl para el buscador
+  public searchControl = new FormControl('');
 
   // ---- AJUSTES EN COLUMNAS ----
   displayedColumns: string[] = [
@@ -64,11 +82,32 @@ export default class ProductoListComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.cargarProductos();
+    this.configurarBuscador();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
+  }
+
+  /**
+   * Configura el buscador para filtrar productos
+   */
+  configurarBuscador(): void {
+    this.searchControl.valueChanges.subscribe(searchValue => {
+      this.applyFilter(searchValue || '');
+    });
+  }
+
+  /**
+   * Aplica el filtro a la tabla de productos
+   */
+  applyFilter(filterValue: string): void {
+    this.dataSource.filter = filterValue.trim().toLowerCase();
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
   }
 
   cargarProductos(): void {
