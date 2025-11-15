@@ -24,8 +24,7 @@ services:
 
       # --- AÑADIR ESTAS 3 LÍNEAS AQUÍ ---
       - AdminUser__Email=admin@pos.com
-      - AdminUser__Password=Admin12345 # ¡IMPORTANTE! Cambia esto por una contraseña segura y diferente a la de la BD
-      - AdminUser__Username=admin
+      - AdminUser__Password=Admin12345 # 
       # --- FIN DE LÍNEAS A AÑADIR ---
 
       # --- AÑADIR ESTAS 3 LÍNEAS PARA EL TOKEN ---
